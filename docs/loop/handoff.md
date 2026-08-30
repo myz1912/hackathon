@@ -16,24 +16,21 @@
   `renders/event-hoster-gtm-v1/event-hoster-gtm-v1-final.mp4`. Both passed decode
   and audio checks but failed Neo's creative acceptance and require refinement.
 - Repo/branch/head at reconciliation: `/Users/yz/hackathon` /
-  `codex/trueforge-content-agent` / `8b7c18f`.
+  `codex/trueforge-content-agent` / `c4f69e0`.
 - Neo stopped the monolithic implementation path. The current authority is the
   split TrueForge contract-hardening and native-UI-audit DAG below.
 - `TRUEFORGE_NATIVE_UI_AUDIT` completed read-only. Its accepted boundary is
   native structure/density/limited semantic variants and native approval only;
   exact Taoist Neo-Brutalism styling, card-level selected styling, arbitrary
   components, and host-chrome customization are not available to the manifest.
-- `TRUEFORGE_CONTRACT_HARDEN` is still active. Fresh 39/39 pre-review tests,
-  both offline validators, Node syntax, and the installed v0.1.4 AgentSpecSchema
-  passed, but independent review returned `not ready to commit`. The lane is
-  reproducing only the in-scope negation-bypass, dynamic/read-only topology
-  evidence, and approval-receipt-schema findings before rerunning its gates.
+- `TRUEFORGE_CONTRACT_HARDEN` completed local commit `f305a3f` (not pushed):
+  six owned files, 43/43 tests, both offline validators, installed v0.1.4
+  AgentSpecSchema, and response-schema conditionals passed. No live registration
+  or session was attempted because `/api/v1/models` remained empty.
 - Verification: `loop_doctor.py --loop-dir docs/loop --json` returned `ok: true`;
   all six MOV inputs were verified untracked; no template/bad-URL markers found.
-- The working tree contains uncommitted TrueForge integration files owned by the
-  single-writer contract-hardening lane, plus separately owned/untracked
-  `demo/**`, `docs/plans/**`, and source MOVs. This reconciliation does not stage,
-  validate, or claim those artifacts.
+- The main working tree keeps only the six untracked source MOVs and unrelated
+  `docs/plans/**`; the custom `demo/post-director` UI is no longer present.
 - `EVENT_RESEARCH=[~]`: read-only collaboration obtained facts, but no durable
   accepted repository receipt exists.
 - `VIRAL_RESEARCH=[ ]`: not run; no accepted evidence.
@@ -41,9 +38,9 @@
   user-original inputs, including `IMG_4200.mov`, but no durable accepted
   manifest exists. Every MOV remains untracked.
 - `T0=2026-08-29 17:04 PDT`.
-- The one-hour budget expired at `2026-08-29 18:04 PDT`. Start no new lane or
-  successor. Existing bounded contract/video work may only finish its current
-  acceptance/review cycle; a later phase needs a fresh user-authorized budget.
+- The earlier one-hour budget expired at `18:04 PDT`; Neo explicitly replaced
+  that stop with fresh two-lane authorization at `19:40 PDT` and stated no new
+  wall-clock limit.
 - Output remains `package_only`, `external_action: false`.
 - User statement `剪吧，用Record and Replay弄下来` historically approved the
   separately owned VIDEO_RENDER V1; it is no longer current ready work and was
@@ -53,7 +50,7 @@
 
 ```yaml
 customer: event_hoster
-product: daoharness_on_top_of_trueforge_harness
+product: daoharness
 business_outcome: turn_accumulated_raw_event_footage_into_usable_source_linked_approval_gated_linkedin_gtm_video_and_package
 event_url: https://luma.com/agent-harness?tk=vhwtdV
 platform: linkedin
@@ -158,23 +155,25 @@ Verified TrueForge facts and current boundary:
 
 New ready set:
 
-- `VIDEO_REFINE_TWO_CUTS`: ready now; owns only the two existing render project
-  directories and their new outputs.
-- `TRUEFORGE_VERTICAL_SLICE`: create only after the current contract-hardening
-  writer returns a final handoff; owns the TrueForge manifest/sync/smoke/render-
-  bridge paths. Live completion is blocked until Neo configures a model in the
-  TrueForge UI.
+- `VIDEO_REFINE_TWO_CUTS`: active verified task
+  `01a0508c-4f8a-74f0-aeed-23625b10f134`, title
+  `DaoHarness Video — Refine Two Cuts`, cwd `/Users/yz/hackathon`. It owns only
+  the two existing render projects and new ignored outputs.
+- `TRUEFORGE_VERTICAL_SLICE`: active verified worktree task
+  `01a0508d-a7f9-7282-8e6d-587cec5689dc`, title
+  `DaoHarness TrueForge — Native Video Vertical Slice`, cwd
+  `/Users/yz/.codex/worktrees/65e0/hackathon`. It owns the TrueForge
+  manifest/sync/smoke/render-bridge paths. Live completion is blocked until Neo
+  configures a model in the TrueForge UI.
 - `POSTFORGE_CUSTOM_UI`: disposed. Never restore or rebuild it.
 
-The read-only `TRUEFORGE_NATIVE_UI_AUDIT` lane is complete. The only active split
-lane is `TRUEFORGE_CONTRACT_HARDEN`; it retains exclusive write authority over
-its owned TrueForge files.
+The read-only UI audit and contract-hardening lanes are complete. The two new
+tasks above are the only active execution lanes.
 
 Verified active project threads:
 
-- `TRUEFORGE_CONTRACT_HARDEN`: `01a05057-c59b-7882-834a-5ad475ba4ddd`, title
-  `TrueForge Contract — Audience Styles`, cwd `/Users/yz/hackathon`, active and
-  `inProgress`. It is the only writer for the named TrueForge files.
+- `TRUEFORGE_CONTRACT_HARDEN`: `01a05057-c59b-7882-834a-5ad475ba4ddd`, completed
+  and idle after commit `f305a3f` and final handoff.
 - `TRUEFORGE_NATIVE_UI_AUDIT`: `01a05057-f717-72d1-8d16-d9bc8247eed7`, title
   `TrueForge UI — Design Capability Audit`, completed read-only with its final
   capability matrix; it changed no files and created no successor.
@@ -192,8 +191,9 @@ Current blockers/unverified state:
 
 - live TrueForge creation is hard-blocked because the model registry is empty
   and create returns 422; never expose secret values while resolving it;
-- the recorded execution budget has expired, so even after credentials exist the
-  Supervisor must not create `LIVE_UI` without fresh user authorization;
+- the model registry remains the only credential gate; the new vertical-slice
+  task is authorized to finish all non-secret work and stop at the Models UI if
+  it remains empty;
 - fresh reconciliation readback: `GET /api/v1/models` returned `count=0`;
 - no live audience-style run, native direction-card rendering, approval-state
   styling, or host-chrome customization has been accepted;
