@@ -1,4 +1,7 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import {
@@ -8,6 +11,7 @@ import {
   type ResearchReport,
 } from "../contracts.js";
 import { assertToolAllowed, ToolDeniedError } from "./policy.js";
+import { writeResearchReceipt } from "./research-receipt.js";
 
 export interface ResearchTool {
   search(query: string, limit: number): Promise<ResearchReport>;
@@ -17,17 +21,25 @@ export type ResearchToolErrorCode = "TIMEOUT" | "EXIT" | "INVALID_OUTPUT" | "REA
 
 export class ResearchToolError extends Error {
   readonly code: ResearchToolErrorCode;
-  readonly exitCode: number | undefined;
+  readonly exitCode: number | null;
+  readonly stderr: string;
+  receiptPath: string | undefined;
 
-  constructor(message: string, code: ResearchToolErrorCode, exitCode?: number) {
+  constructor(
+    message: string,
+    code: ResearchToolErrorCode,
+    options: { readonly exitCode?: number | null; readonly stderr?: string } = {},
+  ) {
     super(message);
     this.name = "ResearchToolError";
     this.code = code;
-    this.exitCode = exitCode;
+    this.exitCode = options.exitCode ?? null;
+    this.stderr = options.stderr ?? "";
   }
 }
 
 const READ_ONLY_SUBCOMMANDS = new Set(["search", "scrape"]);
+const STDERR_LIMIT = 2_000;
 
 export function assertReadOnlySubcommand(subcommand: string): void {
   if (!READ_ONLY_SUBCOMMANDS.has(subcommand)) {
@@ -45,9 +57,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function firstString(record: Record<string, unknown>, keys: readonly string[]): string | undefined {
   for (const key of keys) {
     const value = record[key];
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value.trim();
-    }
+    if (typeof value === "string" && value.trim().length > 0) return value.trim();
   }
   return undefined;
 }
@@ -58,18 +68,11 @@ function collectUrlRecords(value: unknown, records: Record<string, unknown>[]): 
     return;
   }
   if (!isRecord(value)) return;
-
   if (firstString(value, ["url", "link", "sourceUrl", "source_url"])) {
     records.push(value);
     return;
   }
-
   for (const nested of Object.values(value)) collectUrlRecords(nested, records);
-}
-
-function validIso(value: string | undefined, fallback: string): string {
-  if (!value) return fallback;
-  return Number.isNaN(Date.parse(value)) ? fallback : value;
 }
 
 function publisherFromUrl(url: string): string {
@@ -85,6 +88,7 @@ export function normalizeBrightDataPayload(
   query: string,
   limit: number,
   collectedAt = new Date().toISOString(),
+  sourceMode: "live" | "fixture" = "live",
 ): ResearchReport {
   if (!Number.isInteger(limit) || limit < 1) {
     throw new ResearchToolError("Research limit must be a positive integer", "INVALID_OUTPUT");
@@ -99,23 +103,18 @@ export function normalizeBrightDataPayload(
     if (findings.length >= limit) break;
     const url = firstString(record, ["url", "link", "sourceUrl", "source_url"]);
     if (!url || seenUrls.has(url)) continue;
-
     const title = firstString(record, ["title", "name", "headline"]);
     const evidence = firstString(record, ["evidence", "snippet", "description", "text"]);
     const pattern = firstString(record, ["pattern", "insight", "description", "snippet"]);
-    const candidate = {
+    const parsed = ResearchFindingSchema.safeParse({
       url,
       title: title ?? evidence ?? "Untitled source",
       publisher:
         firstString(record, ["publisher", "source", "domain", "displayLink"]) ?? publisherFromUrl(url),
-      collectedAt: validIso(
-        firstString(record, ["collectedAt", "collected_at", "publishedAt", "published_at"]),
-        collectedAt,
-      ),
+      collectedAt,
       pattern: pattern ?? title ?? "Source retained for review",
       evidence: evidence ?? title ?? "Source retained for review",
-    };
-    const parsed = ResearchFindingSchema.safeParse(candidate);
+    });
     if (!parsed.success) continue;
     seenUrls.add(parsed.data.url);
     findings.push(parsed.data);
@@ -126,6 +125,7 @@ export function normalizeBrightDataPayload(
     query,
     collectedAt,
     sourceCount: findings.length,
+    sourceMode,
   });
 }
 
@@ -134,26 +134,46 @@ export interface BrightDataCliOptions {
   readonly timeoutMs?: number;
   readonly env?: NodeJS.ProcessEnv;
   readonly spawner?: typeof spawn;
+  readonly receiptWriter?: typeof writeResearchReceipt;
 }
 
 export interface BrightDataCommandOptions extends BrightDataCliOptions {}
+
+export interface BrightDataCommandResult {
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly exitCode: number;
+}
+
+function credentialFrom(env: NodeJS.ProcessEnv): string | undefined {
+  return env.BRIGHT_DATA_API_TOKEN ?? env.BRIGHTDATA_API_KEY;
+}
+
+function safeStderr(stderr: string, credential: string | undefined): string {
+  const redacted = credential ? stderr.replaceAll(credential, "[REDACTED]") : stderr;
+  return redacted.slice(0, STDERR_LIMIT);
+}
 
 export async function runBrightDataCommand(
   toolId: string,
   subcommand: string,
   args: readonly string[],
   options: BrightDataCommandOptions = {},
-): Promise<string> {
+): Promise<BrightDataCommandResult> {
   assertToolAllowed(toolId);
   assertReadOnlySubcommand(subcommand);
   if (toolId !== `brightdata.${subcommand}`) throw new ToolDeniedError(toolId);
 
   const binary = options.binary ?? "brightdata";
-  const timeoutMs = options.timeoutMs ?? 15_000;
+  const timeoutMs = options.timeoutMs ?? 25_000;
   const env = options.env ?? process.env;
   const spawner = options.spawner ?? spawn;
-  return await new Promise<string>((resolve, reject) => {
-    const child = spawner(binary, [subcommand, ...args], {
+  const credential = credentialFrom(env);
+  // Verified with `brightdata --help`: --api-key is a global option and must precede the subcommand.
+  const commandArgs = [...(credential ? ["--api-key", credential] : []), subcommand, ...args];
+
+  return await new Promise<BrightDataCommandResult>((resolve, reject) => {
+    const child = spawner(binary, commandArgs, {
       env,
       shell: false,
       stdio: ["ignore", "pipe", "pipe"],
@@ -161,6 +181,7 @@ export async function runBrightDataCommand(
     let stdout = "";
     let stderr = "";
     let timedOut = false;
+    let settled = false;
     const timeout = setTimeout(() => {
       timedOut = true;
       child.kill("SIGKILL");
@@ -168,69 +189,109 @@ export async function runBrightDataCommand(
 
     child.stdout?.setEncoding("utf8");
     child.stderr?.setEncoding("utf8");
-    child.stdout?.on("data", (chunk: string) => {
-      stdout += chunk;
-    });
-    child.stderr?.on("data", (chunk: string) => {
-      stderr += chunk;
-    });
+    child.stdout?.on("data", (chunk: string) => (stdout += chunk));
+    child.stderr?.on("data", (chunk: string) => (stderr += chunk));
     child.once("error", (error) => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timeout);
-      reject(new ResearchToolError(`Could not start Bright Data CLI: ${error.message}`, "READ_ERROR"));
+      const detail = safeStderr(stderr, credential);
+      reject(
+        new ResearchToolError(`Could not start Bright Data CLI: ${error.message}`, "READ_ERROR", {
+          exitCode: null,
+          stderr: detail,
+        }),
+      );
     });
     child.once("close", (code) => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timeout);
+      const detail = safeStderr(stderr, credential);
       if (timedOut) {
-        reject(new ResearchToolError(`Bright Data CLI timed out after ${timeoutMs}ms`, "TIMEOUT"));
+        reject(
+          new ResearchToolError(`Bright Data CLI timed out after ${timeoutMs}ms`, "TIMEOUT", {
+            exitCode: code,
+            stderr: detail,
+          }),
+        );
         return;
       }
       if (code !== 0) {
-        const detail = stderr.trim() || "no error output";
-        reject(new ResearchToolError(`Bright Data CLI exited ${String(code)}: ${detail}`, "EXIT", code ?? undefined));
+        reject(
+          new ResearchToolError(
+            `Bright Data CLI exited ${String(code)}: ${detail.trim() || "no error output"}`,
+            "EXIT",
+            { exitCode: code, stderr: detail },
+          ),
+        );
         return;
       }
-      resolve(stdout);
+      resolve({ stdout, stderr: detail, exitCode: 0 });
     });
   });
 }
 
 export class BrightDataCli implements ResearchTool {
-  readonly #binary: string;
-  readonly #timeoutMs: number;
-  readonly #env: NodeJS.ProcessEnv;
-  readonly #spawner: typeof spawn;
+  readonly #options: Required<Pick<BrightDataCliOptions, "binary" | "timeoutMs" | "env" | "spawner" | "receiptWriter">>;
+  lastReceiptPath: string | undefined;
 
   constructor(options: BrightDataCliOptions = {}) {
-    this.#binary = options.binary ?? "brightdata";
-    this.#timeoutMs = options.timeoutMs ?? 15_000;
-    this.#env = options.env ?? process.env;
-    this.#spawner = options.spawner ?? spawn;
+    this.#options = {
+      binary: options.binary ?? "brightdata",
+      timeoutMs: options.timeoutMs ?? 25_000,
+      env: options.env ?? process.env,
+      spawner: options.spawner ?? spawn,
+      receiptWriter: options.receiptWriter ?? writeResearchReceipt,
+    };
   }
 
   async search(query: string, limit: number): Promise<ResearchReport> {
-    assertToolAllowed("brightdata.search");
-    assertReadOnlySubcommand("search");
-    const collectedAt = new Date().toISOString();
-    const output = await this.#run("brightdata.search", "search", [query, "--json"]);
-    let payload: unknown;
-    try {
-      payload = JSON.parse(output);
-    } catch (error) {
-      throw new ResearchToolError(
-        `Bright Data returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
-        "INVALID_OUTPUT",
-      );
-    }
-    return normalizeBrightDataPayload(payload, query, limit, collectedAt);
+    return (await this.searchWithReceipt(query, limit)).report;
   }
 
-  async #run(toolId: string, subcommand: string, args: readonly string[]): Promise<string> {
-    return await runBrightDataCommand(toolId, subcommand, args, {
-      binary: this.#binary,
-      timeoutMs: this.#timeoutMs,
-      env: this.#env,
-      spawner: this.#spawner,
+  async searchWithReceipt(query: string, limit: number): Promise<{ report: ResearchReport; receiptPath: string }> {
+    const startedAt = Date.now();
+    const collectedAt = new Date().toISOString();
+    let report: ResearchReport | undefined;
+    let failure: ResearchToolError | undefined;
+    let exitCode: number | null = null;
+
+    try {
+      const result = await runBrightDataCommand("brightdata.search", "search", [query, "--json"], this.#options);
+      exitCode = result.exitCode;
+      let payload: unknown;
+      try {
+        payload = JSON.parse(result.stdout);
+      } catch (error) {
+        throw new ResearchToolError(
+          `Bright Data returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+          "INVALID_OUTPUT",
+          { exitCode: result.exitCode, stderr: result.stderr },
+        );
+      }
+      report = normalizeBrightDataPayload(payload, query, limit, collectedAt, "live");
+    } catch (error) {
+      failure =
+        error instanceof ResearchToolError
+          ? error
+          : new ResearchToolError(error instanceof Error ? error.message : String(error), "READ_ERROR");
+      exitCode = failure.exitCode;
+    }
+
+    const receiptPath = await this.#options.receiptWriter({
+      query,
+      findings: report?.findings ?? [],
+      cliExitCode: exitCode,
+      durationMs: Math.max(0, Date.now() - startedAt),
     });
+    this.lastReceiptPath = receiptPath;
+    if (failure) {
+      failure.receiptPath = receiptPath;
+      throw failure;
+    }
+    if (!report) throw new ResearchToolError("Bright Data produced no report", "INVALID_OUTPUT", { exitCode });
+    return { report, receiptPath };
   }
 }
 
@@ -254,13 +315,40 @@ export class FixtureResearch implements ResearchTool {
       );
     }
     const fixtureTimestamp =
-      isRecord(payload) && typeof payload.collectedAt === "string"
-        ? validIso(payload.collectedAt, new Date().toISOString())
+      isRecord(payload) && typeof payload.collectedAt === "string" && !Number.isNaN(Date.parse(payload.collectedAt))
+        ? payload.collectedAt
         : new Date().toISOString();
-    return normalizeBrightDataPayload(payload, query, limit, fixtureTimestamp);
+    return normalizeBrightDataPayload(payload, query, limit, fixtureTimestamp, "fixture");
   }
 }
 
-export function makeResearchTool(env: Readonly<Record<string, string | undefined>>): ResearchTool {
-  return env.BRIGHT_DATA_API_TOKEN ? new BrightDataCli({ env: { ...process.env, ...env } }) : new FixtureResearch();
+/**
+ * The CLI can authenticate two ways: an explicit key via `-k/--api-key`, or credentials
+ * stored on disk by `brightdata login`. Treat a stored login as valid credentials —
+ * otherwise a logged-in machine silently degrades to fixtures, which is the exact
+ * dishonesty this module exists to prevent.
+ */
+export function hasStoredLogin(home = os.homedir(), platform = process.platform): boolean {
+  const configDir =
+    platform === "darwin"
+      ? path.join(home, "Library", "Application Support", "brightdata-cli")
+      : platform === "win32"
+        ? path.join(home, "AppData", "Roaming", "brightdata-cli")
+        : path.join(home, ".config", "brightdata-cli");
+  try {
+    // Verified against @brightdata/cli's credentials loader; never read or expose the key here.
+    return fs.existsSync(path.join(configDir, "credentials.json"));
+  } catch {
+    return false;
+  }
+}
+
+export function makeResearchTool(
+  env: Readonly<Record<string, string | undefined>>,
+  storedLogin = hasStoredLogin(),
+): ResearchTool {
+  const hasEnvKey = Boolean(env.BRIGHT_DATA_API_TOKEN || env.BRIGHTDATA_API_KEY);
+  return hasEnvKey || storedLogin
+    ? new BrightDataCli({ env: { ...process.env, ...env } })
+    : new FixtureResearch();
 }

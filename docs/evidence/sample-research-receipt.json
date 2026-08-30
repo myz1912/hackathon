@@ -1,0 +1,13 @@
+{
+  "query": "short form video hooks",
+  "sourceMode": "live",
+  "findings": [
+    {
+      "url": "https://example.com/redacted-source",
+      "publisher": "example.com",
+      "collectedAt": "2026-08-29T16:00:00.000Z"
+    }
+  ],
+  "cliExitCode": 0,
+  "durationMs": 1234
+}

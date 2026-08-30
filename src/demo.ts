@@ -47,7 +47,6 @@ function spanTimings(trace: Awaited<ReturnType<typeof runDirector>>["trace"]): v
   }
 }
 
-const mode = process.env.BRIGHT_DATA_API_TOKEN ? "Bright Data CLI" : "offline fixture (no token present)";
 const result = await runDirector(brief, { researchTool: makeResearchTool(process.env) });
 
 section("1. Brief");
@@ -58,7 +57,7 @@ row("platform", brief.platform);
 row("media", brief.mediaPaths.join(", "));
 row("media root", resolveWithinRoot(MEDIA_ROOT, "."));
 row("Bright Data tools", READ_ONLY_TOOL_IDS.join(", "));
-row("research mode", mode);
+row("research mode", result.research.sourceMode);
 row("orchestration mode", "local fixture fallback; TrueForge :8790 was unreachable during verification");
 
 section("2. Parallel subagents");

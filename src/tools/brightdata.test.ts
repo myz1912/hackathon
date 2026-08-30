@@ -1,7 +1,12 @@
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
+import { EventEmitter } from "node:events";
+import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 import {
   assertReadOnlySubcommand,
+  BrightDataCli,
+  FixtureResearch,
+  makeResearchTool,
   normalizeBrightDataPayload,
   ResearchToolError,
   runBrightDataCommand,
@@ -9,7 +14,7 @@ import {
 import { READ_ONLY_TOOL_IDS, ToolDeniedError, assertToolAllowed } from "./policy.js";
 
 describe("normalizeBrightDataPayload", () => {
-  it("preserves source URLs and source timestamps while dropping URL-less findings", () => {
+  it("preserves source URLs, stamps fetch time, and drops URL-less findings", () => {
     const report = normalizeBrightDataPayload(
       {
         results: [
@@ -45,11 +50,56 @@ describe("normalizeBrightDataPayload", () => {
       "https://example.org/two",
     ]);
     expect(report.findings.map((finding) => finding.collectedAt)).toEqual([
-      "2026-08-20T10:00:00.000Z",
-      "2026-08-20T12:00:00.000Z",
+      "2026-08-29T16:00:00.000Z",
+      "2026-08-29T16:00:00.000Z",
     ]);
     expect(report.collectedAt).toBe("2026-08-29T16:00:00.000Z");
     expect(report.sourceCount).toBe(2);
+    expect(report.sourceMode).toBe("live");
+  });
+});
+
+function fakeSpawner(result: { stdout?: string; stderr?: string; code: number | null }): typeof spawn {
+  return vi.fn(() => {
+    const child = new EventEmitter() as ChildProcess;
+    const stdout = new PassThrough();
+    const stderr = new PassThrough();
+    Object.assign(child, { stdout, stderr, kill: vi.fn(() => true) });
+    queueMicrotask(() => {
+      if (result.stdout) stdout.write(result.stdout);
+      if (result.stderr) stderr.write(result.stderr);
+      stdout.end();
+      stderr.end();
+      child.emit("close", result.code, null);
+    });
+    return child;
+  }) as unknown as typeof spawn;
+}
+
+describe("BrightDataCli", () => {
+  it("surfaces non-zero exit without returning fixtures", async () => {
+    const receiptWriter = vi.fn(async () => "/tmp/failed-receipt.json");
+    const tool = new BrightDataCli({
+      env: { BRIGHT_DATA_API_TOKEN: "secret-test-token" },
+      spawner: fakeSpawner({ code: 9, stderr: "upstream rejected request" }),
+      receiptWriter,
+    });
+
+    await expect(tool.search("hooks", 3)).rejects.toMatchObject({
+      code: "EXIT",
+      exitCode: 9,
+      stderr: "upstream rejected request",
+    });
+    expect(receiptWriter).toHaveBeenCalledWith(
+      expect.objectContaining({ findings: [], cliExitCode: 9 }),
+    );
+  });
+
+  it("uses fixture provenance when credentials are absent", async () => {
+    const tool = makeResearchTool({}, false);
+    expect(tool).toBeInstanceOf(FixtureResearch);
+    const report = await tool.search("hooks", 1);
+    expect(report.sourceMode).toBe("fixture");
   });
 });
 

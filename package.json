@@ -11,6 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "demo": "node --import tsx src/demo.ts",
+    "research:live": "node --import tsx src/research-live.ts",
+    "tf:register": "node --import tsx src/trueforge/register.ts",
+    "tf:trace": "node --import tsx src/trueforge/trace.ts",
     "verify": "npm run typecheck && npm test"
   },
   "dependencies": {

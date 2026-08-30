@@ -36,6 +36,7 @@ export const ResearchReportSchema = z
     query: nonEmptyString,
     collectedAt: isoTimestamp,
     sourceCount: z.number().int().nonnegative(),
+    sourceMode: z.enum(["live", "fixture"]),
   })
   .strict()
   .superRefine((report, context) => {

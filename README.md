@@ -13,13 +13,16 @@ Built 29 August 2026 for the TrueForge Agent Harness Hackathon.
 
 ```bash
 npm install
-npm run verify                 # typecheck + 25 tests, no network, no credentials
+npm run verify                 # typecheck + 31 tests, no network, no credentials
 npm run demo -- --approve      # full run, writes a packet
 npm run demo -- --deny         # denial path: nothing is written
 npm run demo -- --tamper       # approve a plan, mutate it, watch the gate refuse
+npm run research:live -- "short form video hooks"
+npm run tf:register            # requires a configured TrueForge model provider
+npm run tf:trace               # writes artifacts/trueforge-session-<id>.json
 ```
 
-Node ≥ 22. Tests and the demo run entirely offline against fixtures.
+Node ≥ 22. Tests run entirely offline against fixtures and stubbed process/HTTP layers.
 
 ## What it does
 
@@ -80,11 +83,11 @@ npx vitest run      6 files, 25 tests passed
 
 ## Honest limits
 
-- **Live Bright Data and real media probing are not exercised.** Verified runs use offline
-  fixtures, and the demo prints that rather than implying live data.
-- TrueForge agent registration and a live session trace are **not** in this repo yet.
-  TrueForge v0.1.4 runs locally and its API was probed, but the pipeline does not yet
-  execute as a registered TrueForge agent.
+- Live Bright Data requires `BRIGHT_DATA_API_TOKEN` (or `BRIGHTDATA_API_KEY`). Missing
+  credentials produce fixture provenance; present credentials with a failed call produce
+  an error and never silently use fixtures.
+- TrueForge registration and trace commands require a configured model provider. They fail
+  closed with remediation when none exists.
 - HyperFrames rendering (P5) is not implemented.
 - `docs/status.html` claims derivation by a `status-provenance.mjs` that does not exist,
   and its outputs disagree with `docs/status-derived.json`. Open — see Qodo finding 4 below.
