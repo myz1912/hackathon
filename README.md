@@ -244,7 +244,11 @@ The recorded demo shows the real TrueForge session trace, native choice, two sub
 ### How did you use Qodo?
 
 ```text
-We structured the substantive hackathon work for a Qodo-reviewed pull-request workflow, including an initial review, documented fixes or reasoned dismissals, and a follow-up review. At the time of this repository publication, that external Qodo review had not completed, so we do not claim unverified Qodo findings.
+We used Qodo as an external review gate on the security-sensitive core pull requests. Its first review found that the apparent approval gate did not cryptographically bind the exact edit plan and action, that media paths could escape the intended root, and that the Bright Data read-only policy was not enforced before process creation.
+
+We addressed those findings in PR #2 by adding canonical SHA-256 plan/action digests, rechecking the approval immediately before rendering, adding realpath-based media-root confinement, and freezing a deny-by-default Bright Data tool allowlist before process spawn. We also expanded the test suite from 12 to 25 tests and added a tamper demo proving that a modified approved plan writes zero artifacts.
+
+Qodo's follow-up review on PR #2 identified two remaining medium issues: filesystem-root separator handling and a possible symlink validation-to-open race around ffprobe. Those findings are documented and are not represented as resolved in this submission. Review trail: https://github.com/myz1912/hackathon/pull/2
 ```
 
 ### How did you use Bright Data?
