@@ -22,6 +22,8 @@ npm run demo -- --deny         # denial path: nothing is written
 npm run demo -- --tamper       # approve a plan, mutate it, watch the gate refuse
 npm run research:live -- "short form video hooks"
 npm run tf:register            # requires a configured TrueForge model provider
+npm run tf:run -- "<message>"  # one turn, approvals answered live, trace written
+npm run tf:render -- inputs cards   # stage media in the sandbox, agent renders the cut
 npm run tf:trace               # writes artifacts/trueforge-session-<id>.json
 ```
 
@@ -81,7 +83,7 @@ Clean install from `package.json`, `node_modules` and lockfile removed first:
 ```
 npm install         0 vulnerabilities
 npx tsc --noEmit    exit 0
-npx vitest run      8 files, 31 tests passed
+npx vitest run      10 files, 38 tests passed
 ```
 
 ## Honest limits
@@ -89,6 +91,8 @@ npx vitest run      8 files, 31 tests passed
 - The in-repo pipeline's subagents run in-process; the TrueForge agent performs research
   through the Bright Data MCP server. They are two surfaces over the same contracts, not
   the same execution path.
+- HyperFrames rendering is still not implemented. Video is cut with ffmpeg inside the
+  agent's sandbox, driven by the `video-cut` skill.
 - Live Bright Data requires `BRIGHT_DATA_API_TOKEN`, `BRIGHTDATA_API_KEY`, or a stored
   `brightdata login`. Missing
   credentials produce fixture provenance; present credentials with a failed call produce
@@ -121,6 +125,25 @@ One recorded session produced **9 MCP tool responses** (5590 in / 1465 out token
 edit plan citing four URLs returned by live search. Raw events:
 [`docs/evidence/trueforge-session-events.json`](docs/evidence/trueforge-session-events.json).
 
+## The agent renders its own video
+
+`npm run tf:render` stages footage into the session's sandbox and the agent produces the
+cut itself, following the `video-cut` skill.
+
+The sandbox is genuinely confined — it cannot read this repository or `/tmp`
+(`Operation not permitted`), so media is staged into the session's own sandbox directory,
+which TrueForge provisions lazily on first `exec`.
+
+Verified output, checked independently rather than taken from the agent's summary:
+**1080×1350 · 19.86s · h264 video + aac audio (48 kHz stereo) · yuv420p.**
+
+Left behind in its own working directory: six normalised segments, a concat manifest,
+`final_ffprobe.txt`, and a **caption contact sheet it rendered to inspect its own
+captions**. Neither of the last two was requested in the prompt — the skill says *verify
+the delivered file, not the command* and *extract a frame and actually look at it*.
+
+Full trace and token breakdown: [`docs/evidence/agent-render.md`](docs/evidence/agent-render.md).
+
 ## Agentic skills
 
 Four Git-backed `SKILL.md` packages in [`skills/`](skills/), registered in TrueForge and
@@ -133,6 +156,7 @@ task calls for it.
 | **edit-plan** | Patterns + probed media → segments with exact timecodes. Every segment carries a citation, and a cut that cannot be justified by a researched pattern is dropped. |
 | **platform-copy** | Caption, hashtags and on-screen text for one platform. Producing copy is explicitly not permission to post it. |
 | **source-discipline** | The honesty rules binding the others. *"A URL you did not receive from a tool does not exist."* |
+| **video-cut** | Turning an approved plan into an actual file: segment selection by `volumedetect` energy, `loudnorm` at −16 LUFS, caption compositing when `drawtext` is unavailable, and verifying the delivered artifact rather than the command's exit code. |
 
 Verified loading: asked to quote `source-discipline`, the agent pulled it from this repo
 and returned its rules verbatim — trace in
