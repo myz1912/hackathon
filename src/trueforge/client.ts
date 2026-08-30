@@ -1,3 +1,5 @@
+import { assertSafeId } from "./safe-id.js";
+
 export type FetchLike = typeof fetch;
 
 export type TrueForgeErrorCode = "HTTP" | "TIMEOUT" | "NETWORK" | "INVALID_RESPONSE";
@@ -111,11 +113,73 @@ function asSession(value: unknown): TrueForgeSession {
     throw new TrueForgeError("TrueForge returned an invalid session", "INVALID_RESPONSE");
   }
   return {
-    id: requiredString(value, "id"),
+    id: assertSafeId(requiredString(value, "id")),
     agent: value.agent,
     created_at: requiredString(value, "created_at"),
     updated_at: requiredString(value, "updated_at"),
   };
+}
+
+function withInactivityTimeout(
+  stream: ReadableStream<Uint8Array>,
+  timeoutMs: number,
+  abortController: AbortController,
+): ReadableStream<Uint8Array> {
+  const reader = stream.getReader();
+  let closed = false;
+
+  function release(): void {
+    try {
+      reader.releaseLock();
+    } catch {
+      // A pending read still owns the lock; cancellation will release it.
+    }
+  }
+
+  return new ReadableStream<Uint8Array>(
+    {
+      async pull(controller) {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          const result = await Promise.race([
+            reader.read(),
+            new Promise<never>((_resolve, reject) => {
+              timer = setTimeout(() => {
+                const error = new TrueForgeError(
+                  `TrueForge stream was inactive for ${timeoutMs}ms`,
+                  "TIMEOUT",
+                );
+                reject(error);
+                abortController.abort(error);
+              }, timeoutMs);
+            }),
+          ]);
+          if (result.done) {
+            closed = true;
+            controller.close();
+            release();
+            return;
+          }
+          controller.enqueue(result.value);
+        } catch (error) {
+          closed = true;
+          await reader.cancel(error).catch(() => undefined);
+          release();
+          controller.error(error);
+        } finally {
+          if (timer !== undefined) clearTimeout(timer);
+        }
+      },
+      async cancel(reason) {
+        if (closed) return;
+        closed = true;
+        abortController.abort(reason);
+        await reader.cancel(reason);
+        release();
+      },
+    },
+    { highWaterMark: 0 },
+  );
 }
 
 function asTurn(value: unknown): TrueForgeTurn {
@@ -202,6 +266,7 @@ export class TrueForgeClient {
   }
 
   async createTurn(sessionId: string, content: string): Promise<TrueForgeTurn> {
+    assertSafeId(sessionId);
     return asTurn(
       dataFrom(
         await this.#request(`/api/v1/sessions/${encodeURIComponent(sessionId)}/turns`, {
@@ -216,17 +281,23 @@ export class TrueForgeClient {
   }
 
   async openTurnStream(sessionId: string, content: string): Promise<ReadableStream<Uint8Array>> {
-    const response = await this.#requestResponse(`/api/v1/sessions/${encodeURIComponent(sessionId)}/turns`, {
-      method: "POST",
-      headers: { accept: "text/event-stream" },
-      body: JSON.stringify({
-        input: [{ type: "user.message", content }],
-      }),
-    });
+    assertSafeId(sessionId);
+    const controller = new AbortController();
+    const response = await this.#requestResponse(
+      `/api/v1/sessions/${encodeURIComponent(sessionId)}/turns`,
+      {
+        method: "POST",
+        headers: { accept: "text/event-stream" },
+        body: JSON.stringify({
+          input: [{ type: "user.message", content }],
+        }),
+      },
+      controller,
+    );
     if (!response.body) {
       throw new TrueForgeError("TrueForge streaming turn returned no body", "INVALID_RESPONSE", response.status);
     }
-    return response.body;
+    return withInactivityTimeout(response.body, this.#timeoutMs, controller);
   }
 
   async submitToolApproval(
@@ -235,6 +306,7 @@ export class TrueForgeClient {
     toolCallId: string,
     approval: ToolApproval,
   ): Promise<void> {
+    assertSafeId(sessionId);
     await this.#request(`/api/v1/sessions/${encodeURIComponent(sessionId)}/turns`, {
       method: "POST",
       body: JSON.stringify({
@@ -251,6 +323,7 @@ export class TrueForgeClient {
   }
 
   async getTurn(sessionId: string, turnId: string): Promise<TrueForgeTurn> {
+    assertSafeId(sessionId);
     return asTurn(
       dataFrom(
         await this.#request(
@@ -261,16 +334,48 @@ export class TrueForgeClient {
   }
 
   async listEvents(sessionId: string): Promise<TrueForgeEvent[]> {
-    const data = dataFrom(
-      await this.#request(`/api/v1/sessions/${encodeURIComponent(sessionId)}/events?limit=100`),
-    );
-    if (!Array.isArray(data)) throw new TrueForgeError("TrueForge returned an invalid event list", "INVALID_RESPONSE");
-    return data.map((item) => {
-      if (!isRecord(item) || !isRecord(item.event) || typeof item.event.type !== "string") {
-        throw new TrueForgeError("TrueForge returned an invalid event", "INVALID_RESPONSE");
+    assertSafeId(sessionId);
+    const events: TrueForgeEvent[] = [];
+    const seenTokens = new Set<string>();
+    let pageToken: string | undefined;
+
+    do {
+      const params = new URLSearchParams({ limit: "100" });
+      if (pageToken) params.set("page_token", pageToken);
+      const response = await this.#request(
+        `/api/v1/sessions/${encodeURIComponent(sessionId)}/events?${params}`,
+      );
+      const data = dataFrom(response);
+      if (!Array.isArray(data)) {
+        throw new TrueForgeError("TrueForge returned an invalid event list", "INVALID_RESPONSE");
       }
-      return { turn_id: requiredString(item, "turn_id"), event: item.event as TrueForgeEvent["event"] };
-    });
+      events.push(
+        ...data.map((item) => {
+          if (!isRecord(item) || !isRecord(item.event) || typeof item.event.type !== "string") {
+            throw new TrueForgeError("TrueForge returned an invalid event", "INVALID_RESPONSE");
+          }
+          return {
+            turn_id: requiredString(item, "turn_id"),
+            event: item.event as TrueForgeEvent["event"],
+          };
+        }),
+      );
+
+      const pagination = isRecord(response) && isRecord(response.pagination) ? response.pagination : undefined;
+      const next = pagination?.next_page_token;
+      if (next !== undefined && next !== null && typeof next !== "string") {
+        throw new TrueForgeError("TrueForge returned invalid event pagination", "INVALID_RESPONSE");
+      }
+      pageToken = typeof next === "string" && next.length > 0 ? next : undefined;
+      if (pageToken) {
+        if (seenTokens.has(pageToken)) {
+          throw new TrueForgeError("TrueForge repeated an event page token", "INVALID_RESPONSE");
+        }
+        seenTokens.add(pageToken);
+      }
+    } while (pageToken);
+
+    return events;
   }
 
   async #request(path: string, init: RequestInit = {}): Promise<unknown> {
@@ -289,8 +394,11 @@ export class TrueForgeClient {
     }
   }
 
-  async #requestResponse(path: string, init: RequestInit = {}): Promise<Response> {
-    const controller = new AbortController();
+  async #requestResponse(
+    path: string,
+    init: RequestInit = {},
+    controller = new AbortController(),
+  ): Promise<Response> {
     const timeout = setTimeout(() => controller.abort(), this.#timeoutMs);
     let response: Response;
     try {

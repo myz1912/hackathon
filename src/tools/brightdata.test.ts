@@ -59,7 +59,9 @@ describe("normalizeBrightDataPayload", () => {
   });
 });
 
-function fakeSpawner(result: { stdout?: string; stderr?: string; code: number | null }): typeof spawn {
+function fakeSpawner(
+  result: { stdout?: string; stderr?: string; code: number | null },
+): typeof spawn & ReturnType<typeof vi.fn> {
   return vi.fn(() => {
     const child = new EventEmitter() as ChildProcess;
     const stdout = new PassThrough();
@@ -73,10 +75,24 @@ function fakeSpawner(result: { stdout?: string; stderr?: string; code: number | 
       child.emit("close", result.code, null);
     });
     return child;
-  }) as unknown as typeof spawn;
+  }) as unknown as typeof spawn & ReturnType<typeof vi.fn>;
 }
 
 describe("BrightDataCli", () => {
+  it("passes credentials through the CLI environment and never argv", async () => {
+    const spawner = fakeSpawner({ code: 0, stdout: "{}" });
+    await runBrightDataCommand("brightdata.search", "search", ["hooks", "--json"], {
+      env: { BRIGHT_DATA_API_TOKEN: "secret-test-token" },
+      spawner,
+    });
+
+    const argv = spawner.mock.calls[0]?.[1];
+    const options = spawner.mock.calls[0]?.[2];
+    expect(argv).toEqual(["search", "hooks", "--json"]);
+    expect(argv).not.toContain("secret-test-token");
+    expect(options?.env).toMatchObject({ BRIGHTDATA_API_KEY: "secret-test-token" });
+  });
+
   it("surfaces non-zero exit without returning fixtures", async () => {
     const receiptWriter = vi.fn(async () => "/tmp/failed-receipt.json");
     const tool = new BrightDataCli({
@@ -100,6 +116,37 @@ describe("BrightDataCli", () => {
     expect(tool).toBeInstanceOf(FixtureResearch);
     const report = await tool.search("hooks", 1);
     expect(report.sourceMode).toBe("fixture");
+  });
+
+  it("preserves a research failure when the failure receipt cannot be written", async () => {
+    const receiptFailure = new Error("disk full");
+    const tool = new BrightDataCli({
+      spawner: fakeSpawner({ code: 9, stderr: "upstream rejected request" }),
+      receiptWriter: vi.fn(async () => {
+        throw receiptFailure;
+      }),
+    });
+
+    await expect(tool.search("hooks", 3)).rejects.toMatchObject({
+      code: "EXIT",
+      exitCode: 9,
+      cause: receiptFailure,
+      receiptFailure,
+    });
+  });
+
+  it("returns successful research when its receipt cannot be written", async () => {
+    const tool = new BrightDataCli({
+      spawner: fakeSpawner({ code: 0, stdout: '{"results":[]}' }),
+      receiptWriter: vi.fn(async () => {
+        throw new Error("disk full");
+      }),
+    });
+
+    await expect(tool.search("hooks", 3)).resolves.toMatchObject({
+      query: "hooks",
+      sourceMode: "live",
+    });
   });
 });
 

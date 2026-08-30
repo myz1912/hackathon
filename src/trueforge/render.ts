@@ -9,12 +9,14 @@
  *
  *   npm run tf:render -- ./inputs ./cards
  */
-import { cp, mkdir, readdir, stat } from "node:fs/promises";
+import { cp, lstat, mkdir, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { TrueForgeClient } from "./client.js";
 import { runTurnWithApprovals, allowAll } from "./hitl.js";
+import { POSTFORGE_AGENT_NAME } from "./register.js";
+import { assertSafeId, resolveWithin } from "./safe-id.js";
 
 const SANDBOX_ROOT = path.join(
   homedir(),
@@ -25,31 +27,44 @@ const SANDBOX_ROOT = path.join(
 );
 
 /** Newest sandbox directory belonging to a session, once TrueForge has provisioned one. */
-export async function sandboxDirFor(sessionId: string): Promise<string | undefined> {
-  const base = path.join(SANDBOX_ROOT, sessionId);
+export const RENDER_AGENT_NAME = POSTFORGE_AGENT_NAME;
+
+export async function sandboxDirFor(
+  sessionId: string,
+  sandboxRoot = SANDBOX_ROOT,
+): Promise<string | undefined> {
+  const base = resolveWithin(sandboxRoot, assertSafeId(sessionId));
   if (!existsSync(base)) return undefined;
-  const entries = await readdir(base);
-  const dirs = await Promise.all(
-    entries.map(async (name) => {
-      const full = path.join(base, name);
-      return { full, mtime: (await stat(full)).mtimeMs };
-    }),
-  );
+  const entries = await readdir(base, { withFileTypes: true });
+  const dirs: { full: string; mtime: number }[] = [];
+  for (const entry of entries) {
+    if (entry.isSymbolicLink() || !entry.isDirectory()) continue;
+    const full = resolveWithin(base, entry.name);
+    const info = await lstat(full);
+    if (info.isSymbolicLink() || !info.isDirectory()) continue;
+    dirs.push({ full, mtime: info.mtimeMs });
+  }
   return dirs.sort((a, b) => b.mtime - a.mtime)[0]?.full;
 }
 
 export async function stageMedia(sandboxDir: string, sources: readonly string[]): Promise<number> {
-  const target = path.join(sandboxDir, "media");
+  const target = resolveWithin(sandboxDir, "media");
   await mkdir(target, { recursive: true });
-  let staged = 0;
+  const existing = await readdir(target, { withFileTypes: true });
+  const names = new Set(existing.map((entry) => entry.name));
+  const pending: { source: string; destination: string }[] = [];
   for (const dir of sources) {
     if (!existsSync(dir)) continue;
-    for (const name of await readdir(dir)) {
-      await cp(path.join(dir, name), path.join(target, name));
-      staged += 1;
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      if (!entry.isFile()) continue;
+      if (names.has(entry.name)) throw new Error(`Duplicate staged media name: ${entry.name}`);
+      names.add(entry.name);
+      pending.push({ source: path.join(dir, entry.name), destination: path.join(target, entry.name) });
     }
   }
-  return staged;
+  for (const item of pending) await cp(item.source, item.destination);
+  const staged = await readdir(target, { withFileTypes: true });
+  return staged.filter((entry) => entry.isFile()).length;
 }
 
 const RENDER_BRIEF = `Load your video-cut skill and follow it. The event footage and the caption cards c1.png..c6.png are staged in ./media/ in your sandbox.
@@ -67,7 +82,7 @@ export async function renderWithAgent(opts: {
 }): Promise<{ sessionId: string; sandboxDir: string; staged: number; finalText: string }> {
   const client = opts.client ?? new TrueForgeClient();
   const agents = await client.listAgents();
-  const name = opts.agentName ?? "postforge-director";
+  const name = opts.agentName ?? RENDER_AGENT_NAME;
   const agent = agents.find((a) => a.name === name);
   if (!agent) throw new Error(`TrueForge agent not found: ${name}`);
 

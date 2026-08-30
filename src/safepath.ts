@@ -44,13 +44,20 @@ function resolveExistingAncestor(candidate: string, offendingPath: string): stri
   }
 }
 
-export function resolveWithinRoot(root: string, candidate: string): string {
+export function resolveWithinRoot(
+  root: string,
+  candidate: string,
+  options: { readonly strict?: boolean } = {},
+): string {
   if (candidate.split(sep).includes("..")) throw new PathEscapeError(candidate);
 
   const realRoot = resolveRoot(root);
   const absoluteCandidate = isAbsolute(candidate) ? resolve(candidate) : resolve(realRoot, candidate);
   const realCandidate = resolveExistingAncestor(absoluteCandidate, candidate);
-  if (realCandidate !== realRoot && !realCandidate.startsWith(`${realRoot}${sep}`)) {
+  if (
+    (options.strict && realCandidate === realRoot) ||
+    (realCandidate !== realRoot && !realCandidate.startsWith(`${realRoot}${sep}`))
+  ) {
     throw new PathEscapeError(candidate);
   }
   return realCandidate;

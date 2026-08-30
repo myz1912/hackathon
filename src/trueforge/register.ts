@@ -27,7 +27,10 @@ export async function ensurePostForgeAgent(
       model: { name: modelName },
       instructions:
         "You are PostForge. Turn owned-media briefs into source-cited edit guidance. Never post or upload; external_action remains false.",
-      config: { sandbox: { enabled: false } },
+      config: {
+        sandbox: { enabled: true },
+        dynamic_sub_agents: { enabled: true },
+      },
     },
   });
   return { agent, created: true };

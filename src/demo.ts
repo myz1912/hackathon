@@ -47,7 +47,7 @@ function spanTimings(trace: Awaited<ReturnType<typeof runDirector>>["trace"]): v
   }
 }
 
-const result = await runDirector(brief, { researchTool: makeResearchTool(process.env) });
+const result = await runDirector(brief, { researchTool: makeResearchTool({}, false) });
 
 section("1. Brief");
 row("goal", brief.goal);
