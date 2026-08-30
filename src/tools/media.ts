@@ -3,6 +3,7 @@ import { access, readFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MediaProbeSchema, type MediaProbe } from "../contracts.js";
+import { MEDIA_ROOT, resolveWithinRoot } from "../safepath.js";
 
 interface FfprobePayload {
   readonly streams?: readonly unknown[];
@@ -36,7 +37,9 @@ async function fixtureProbe(path: string): Promise<MediaProbe> {
   }
   for (const candidate of payload.probes) {
     const parsed = MediaProbeSchema.safeParse(candidate);
-    if (parsed.success && parsed.data.path === path) return parsed.data;
+    if (parsed.success && resolveWithinRoot(MEDIA_ROOT, parsed.data.path) === path) {
+      return { ...parsed.data, path };
+    }
   }
   throw new Error(`Media file is absent and no fixture probe exists for ${path}`);
 }
@@ -86,25 +89,26 @@ async function runFfprobe(path: string, timeoutMs: number): Promise<string> {
 }
 
 export async function probeMedia(path: string): Promise<MediaProbe> {
-  if (!(await fileExists(path))) return await fixtureProbe(path);
+  const resolvedPath = resolveWithinRoot(MEDIA_ROOT, path);
+  if (!(await fileExists(resolvedPath))) return await fixtureProbe(resolvedPath);
 
-  const raw = await runFfprobe(path, 10_000);
+  const raw = await runFfprobe(resolvedPath, 10_000);
   const payload: unknown = JSON.parse(raw);
   if (!isRecord(payload)) throw new Error("ffprobe returned an invalid payload");
   const typedPayload = payload as FfprobePayload;
   const streams = Array.isArray(typedPayload.streams) ? typedPayload.streams.filter(isRecord) : [];
   const video = streams.find((stream) => stream.codec_type === "video");
   const hasAudio = streams.some((stream) => stream.codec_type === "audio");
-  if (!video) throw new Error(`ffprobe found no video stream in ${path}`);
+  if (!video) throw new Error(`ffprobe found no video stream in ${resolvedPath}`);
 
   const durationSec =
     asPositiveNumber(typedPayload.format?.duration) ??
     asPositiveNumber(video.duration) ??
     (() => {
-      throw new Error(`ffprobe found no positive duration in ${path}`);
+      throw new Error(`ffprobe found no positive duration in ${resolvedPath}`);
     })();
   return MediaProbeSchema.parse({
-    path,
+    path: resolvedPath,
     durationSec,
     width: asPositiveNumber(video.width),
     height: asPositiveNumber(video.height),

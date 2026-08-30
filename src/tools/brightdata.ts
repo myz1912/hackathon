@@ -7,6 +7,7 @@ import {
   type ResearchFinding,
   type ResearchReport,
 } from "../contracts.js";
+import { assertToolAllowed, ToolDeniedError } from "./policy.js";
 
 export interface ResearchTool {
   search(query: string, limit: number): Promise<ResearchReport>;
@@ -128,27 +129,89 @@ export function normalizeBrightDataPayload(
   });
 }
 
-interface BrightDataCliOptions {
+export interface BrightDataCliOptions {
   readonly binary?: string;
   readonly timeoutMs?: number;
   readonly env?: NodeJS.ProcessEnv;
+  readonly spawner?: typeof spawn;
+}
+
+export interface BrightDataCommandOptions extends BrightDataCliOptions {}
+
+export async function runBrightDataCommand(
+  toolId: string,
+  subcommand: string,
+  args: readonly string[],
+  options: BrightDataCommandOptions = {},
+): Promise<string> {
+  assertToolAllowed(toolId);
+  assertReadOnlySubcommand(subcommand);
+  if (toolId !== `brightdata.${subcommand}`) throw new ToolDeniedError(toolId);
+
+  const binary = options.binary ?? "brightdata";
+  const timeoutMs = options.timeoutMs ?? 15_000;
+  const env = options.env ?? process.env;
+  const spawner = options.spawner ?? spawn;
+  return await new Promise<string>((resolve, reject) => {
+    const child = spawner(binary, [subcommand, ...args], {
+      env,
+      shell: false,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill("SIGKILL");
+    }, timeoutMs);
+
+    child.stdout?.setEncoding("utf8");
+    child.stderr?.setEncoding("utf8");
+    child.stdout?.on("data", (chunk: string) => {
+      stdout += chunk;
+    });
+    child.stderr?.on("data", (chunk: string) => {
+      stderr += chunk;
+    });
+    child.once("error", (error) => {
+      clearTimeout(timeout);
+      reject(new ResearchToolError(`Could not start Bright Data CLI: ${error.message}`, "READ_ERROR"));
+    });
+    child.once("close", (code) => {
+      clearTimeout(timeout);
+      if (timedOut) {
+        reject(new ResearchToolError(`Bright Data CLI timed out after ${timeoutMs}ms`, "TIMEOUT"));
+        return;
+      }
+      if (code !== 0) {
+        const detail = stderr.trim() || "no error output";
+        reject(new ResearchToolError(`Bright Data CLI exited ${String(code)}: ${detail}`, "EXIT", code ?? undefined));
+        return;
+      }
+      resolve(stdout);
+    });
+  });
 }
 
 export class BrightDataCli implements ResearchTool {
   readonly #binary: string;
   readonly #timeoutMs: number;
   readonly #env: NodeJS.ProcessEnv;
+  readonly #spawner: typeof spawn;
 
   constructor(options: BrightDataCliOptions = {}) {
     this.#binary = options.binary ?? "brightdata";
     this.#timeoutMs = options.timeoutMs ?? 15_000;
     this.#env = options.env ?? process.env;
+    this.#spawner = options.spawner ?? spawn;
   }
 
   async search(query: string, limit: number): Promise<ResearchReport> {
+    assertToolAllowed("brightdata.search");
     assertReadOnlySubcommand("search");
     const collectedAt = new Date().toISOString();
-    const output = await this.#run("search", [query, "--json"]);
+    const output = await this.#run("brightdata.search", "search", [query, "--json"]);
     let payload: unknown;
     try {
       payload = JSON.parse(output);
@@ -161,47 +224,12 @@ export class BrightDataCli implements ResearchTool {
     return normalizeBrightDataPayload(payload, query, limit, collectedAt);
   }
 
-  async #run(subcommand: string, args: readonly string[]): Promise<string> {
-    assertReadOnlySubcommand(subcommand);
-    return await new Promise<string>((resolve, reject) => {
-      const child = spawn(this.#binary, [subcommand, ...args], {
-        env: this.#env,
-        shell: false,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-      let stdout = "";
-      let stderr = "";
-      let timedOut = false;
-      const timeout = setTimeout(() => {
-        timedOut = true;
-        child.kill("SIGKILL");
-      }, this.#timeoutMs);
-
-      child.stdout.setEncoding("utf8");
-      child.stderr.setEncoding("utf8");
-      child.stdout.on("data", (chunk: string) => {
-        stdout += chunk;
-      });
-      child.stderr.on("data", (chunk: string) => {
-        stderr += chunk;
-      });
-      child.once("error", (error) => {
-        clearTimeout(timeout);
-        reject(new ResearchToolError(`Could not start Bright Data CLI: ${error.message}`, "READ_ERROR"));
-      });
-      child.once("close", (code) => {
-        clearTimeout(timeout);
-        if (timedOut) {
-          reject(new ResearchToolError(`Bright Data CLI timed out after ${this.#timeoutMs}ms`, "TIMEOUT"));
-          return;
-        }
-        if (code !== 0) {
-          const detail = stderr.trim() || "no error output";
-          reject(new ResearchToolError(`Bright Data CLI exited ${String(code)}: ${detail}`, "EXIT", code ?? undefined));
-          return;
-        }
-        resolve(stdout);
-      });
+  async #run(toolId: string, subcommand: string, args: readonly string[]): Promise<string> {
+    return await runBrightDataCommand(toolId, subcommand, args, {
+      binary: this.#binary,
+      timeoutMs: this.#timeoutMs,
+      env: this.#env,
+      spawner: this.#spawner,
     });
   }
 }

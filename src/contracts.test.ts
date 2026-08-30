@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { validateEditPlan, type EditPlan, type MediaProbe } from "./contracts.js";
 
@@ -32,5 +35,16 @@ describe("validateEditPlan", () => {
 
   it("rejects an uncited segment", () => {
     expect(() => validateEditPlan(plan(0, 2, []), [probe])).toThrow();
+  });
+
+  it("rejects a segment outside the configured media root", () => {
+    const parent = mkdtempSync(join(tmpdir(), "postforge-contract-root-"));
+    const mediaRoot = join(parent, "media");
+    const outside = join(parent, "outside.mp4");
+    mkdirSync(mediaRoot);
+    const outsidePlan = plan(0, 2);
+    outsidePlan.segments[0]!.sourcePath = outside;
+    const outsideProbe = { ...probe, path: outside };
+    expect(() => validateEditPlan(outsidePlan, [outsideProbe], mediaRoot)).toThrow(/media root/);
   });
 });

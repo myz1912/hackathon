@@ -2,8 +2,8 @@
   "fixture": true,
   "fixtureNotice": "Offline media probes used only when the named demo files are absent.",
   "probes": [
-    { "path": "fixtures/demo-hook.mp4", "durationSec": 6.4, "width": 1080, "height": 1920, "hasAudio": true },
-    { "path": "fixtures/demo-proof.mp4", "durationSec": 7.8, "width": 1080, "height": 1920, "hasAudio": true },
-    { "path": "fixtures/demo-result.mp4", "durationSec": 5.2, "width": 1080, "height": 1920, "hasAudio": false }
+    { "path": "demo-hook.mp4", "durationSec": 6.4, "width": 1080, "height": 1920, "hasAudio": true },
+    { "path": "demo-proof.mp4", "durationSec": 7.8, "width": 1080, "height": 1920, "hasAudio": true },
+    { "path": "demo-result.mp4", "durationSec": 5.2, "width": 1080, "height": 1920, "hasAudio": false }
   ]
 }

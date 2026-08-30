@@ -24,7 +24,13 @@ const action: ProposedAction = {
   argv: ["write", "one"],
   touches: ["one"],
   description: "test one action",
+  planDigest: "plan-one",
+  digest: "action-one",
 };
+
+function mutablePlan(): EditPlan {
+  return structuredClone(plan);
+}
 
 describe("renderPackage", () => {
   it("does not create an artifact when the write is denied", async () => {
@@ -44,6 +50,44 @@ describe("renderPackage", () => {
     if (!result.rendered) throw new Error("Expected approved render");
     const payload: unknown = JSON.parse(await readFile(result.path, "utf8"));
     expect(payload).toMatchObject({ external_action: false, readyToPublish: true });
+  });
+
+  it("rejects a timecode changed after approval and writes nothing", async () => {
+    const root = await mkdtemp(join(tmpdir(), "postforge-timecode-tamper-"));
+    const artifactsDir = join(root, "artifacts");
+    const tamperedPlan = mutablePlan();
+    const gate = {
+      async request(proposed: ProposedAction) {
+        const segment = tamperedPlan.segments[0];
+        if (!segment) throw new Error("Expected a segment");
+        segment.endSec = 2.5;
+        return { approved: true, reason: "approved before mutation", approvedDigest: proposed.digest };
+      },
+    };
+
+    await expect(renderPackage(tamperedPlan, gate, { artifactsDir })).rejects.toThrow(
+      "does not match current action digest",
+    );
+    await expect(stat(artifactsDir)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("rejects a source path changed after approval and writes nothing", async () => {
+    const root = await mkdtemp(join(tmpdir(), "postforge-source-tamper-"));
+    const artifactsDir = join(root, "artifacts");
+    const tamperedPlan = mutablePlan();
+    const gate = {
+      async request(proposed: ProposedAction) {
+        const segment = tamperedPlan.segments[0];
+        if (!segment) throw new Error("Expected a segment");
+        segment.sourcePath = "replacement.mp4";
+        return { approved: true, reason: "approved before mutation", approvedDigest: proposed.digest };
+      },
+    };
+
+    await expect(renderPackage(tamperedPlan, gate, { artifactsDir })).rejects.toThrow(
+      "does not match current action digest",
+    );
+    await expect(stat(artifactsDir)).rejects.toMatchObject({ code: "ENOENT" });
   });
 });
 
