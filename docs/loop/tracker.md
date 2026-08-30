@@ -15,10 +15,9 @@ Supervisor/controller. All other tasks finish only their already-started bounded
 handoff or lane and must not create, direct, replace, or interrupt children.
 
 ```text
-TRUEFORGE_CONTRACT_HARDEN [ACTIVE; SINGLE WRITER] ---\
-                                                       > LIVE_UI [GATED]
-TRUEFORGE_NATIVE_UI_AUDIT [ACTIVE; READ-ONLY] --------/
-                         + /api/v1/models non-empty --/
+TRUEFORGE_CONTRACT_HARDEN [ACTIVE; REVIEW PENDING] --------\
+TRUEFORGE_NATIVE_UI_AUDIT [COMPLETE; NATIVE APPROX ONLY] ---+--> LIVE_UI [GATED]
+/api/v1/models non-empty [BLOCKED; count=0] ----------------/
 
 LIVE_UI -> live audience-style/design evidence -> TRANSFER_AUDIT
 
@@ -36,16 +35,22 @@ not runtime agents.
 - [~] `EVENT_RESEARCH`: facts were obtained read-only; persist official sources,
   corrected goal/audience, and approved event asset ledger. Durable receipt is
   not yet accepted.
-- [~] `TRUEFORGE_CONTRACT_HARDEN`: active single-writer lane. Harden the
+- [~] `TRUEFORGE_CONTRACT_HARDEN`: active single-writer rework. Fresh offline
+  gates passed, but independent review returned `not ready to commit`. Reproduce
+  and resolve only the in-scope negation-bypass, dynamic/read-only topology
+  evidence, and approval-receipt-schema findings before rerunning review. Harden the
   uncommitted native integration for exactly three audience directions, the
   event-hoster first-direction/audio contract, and one explicitly unvalidated
   `sarcastic_reaction` hypothesis. Preserve the three-agent/approval/package
   truth boundaries and commit only lane-owned TrueForge files after tests and
   review.
-- [~] `TRUEFORGE_NATIVE_UI_AUDIT`: active read-only lane. Audit TrueForge 0.1.4
-  native Generative UI against the canonical Taoist Neo-Brutalism source and
-  report exact component versus host-chrome styling limits. No custom UI.
-- [!] `LIVE_UI`: gated. Do not create until both active lanes pass and live
+- [x] `TRUEFORGE_NATIVE_UI_AUDIT`: completed read-only. TrueForge 0.1.4 native
+  OpenUI can express three-card structure, density differences, limited semantic
+  variants, and native approval flow, but cannot implement exact Taoist
+  Neo-Brutalism styling, card-level selected styling, arbitrary components, or
+  host-chrome customization. No files changed and no successor was created.
+- [!] `LIVE_UI`: gated. Do not create until contract hardening passes, the
+  accepted audit limitation is preserved, and live
   `/api/v1/models` is non-empty. No live audience-style/design proof exists.
 - [~] `MEDIA_INTAKE`: read-only collaboration obtained findings for all six
   originals; persist the out-of-Git manifest before accepting the checkpoint.
@@ -66,9 +71,9 @@ not runtime agents.
 
 | Work | State | Dependency / proof |
 | --- | --- | --- |
-| `TRUEFORGE_CONTRACT_HARDEN` | `ACTIVE` / single writer | task `01a05057-c59b-7882-834a-5ad475ba4ddd`; owns only `trueforge/**`, `scripts/trueforge-*.mjs`, `tests/trueforge-*.test.mjs` |
-| `TRUEFORGE_NATIVE_UI_AUDIT` | `ACTIVE` / read-only | task `01a05057-f717-72d1-8d16-d9bc8247eed7`; canonical source + TrueForge 0.1.4 native surface |
-| `LIVE_UI` | `GATED` | both active lanes pass and `/api/v1/models` becomes non-empty |
+| `TRUEFORGE_CONTRACT_HARDEN` | `ACTIVE_REWORK` / review failed | task `01a05057-c59b-7882-834a-5ad475ba4ddd`; 39/39 pre-review tests and validators passed, but independent review found three in-scope contract/evidence issues; reproduction, rework, rerun, scoped commit, and final remain pending |
+| `TRUEFORGE_NATIVE_UI_AUDIT` | `COMPLETE` / read-only | task `01a05057-f717-72d1-8d16-d9bc8247eed7`; native approximation only, exact styling and host chrome unsupported; 28/28 snapshot tests, no live proof |
+| `LIVE_UI` | `GATED` | contract lane final acceptance plus `/api/v1/models` non-empty; current count is 0 |
 | `VIDEO_RENDER_V1` | `DEFERRED_SEPARATE_OWNER` | not current ready work; does not prove live TrueForge/UI behavior |
 | `EVENT_RESEARCH` | `DEFERRED_TO_RECEIPT` / `[~]` | official-source receipt still incomplete; V1 may use only already approved official assets |
 | `MEDIA_INTAKE` | `CONSUMED_AS_INPUT` / `[~]` | findings exist; six originals remain read-only/untracked; durable manifest still incomplete |
@@ -79,10 +84,15 @@ not runtime agents.
 
 ## Current Split-Run Budget
 
-Each active lane is one bounded checkpoint. Contract hardening stops after its
-owned commit and evidence; UI audit stops after its read-only matrix. The
+Contract hardening remains the only active bounded checkpoint and stops after
+its owned commit and evidence. UI audit completed with a read-only matrix. The
 Supervisor performs only reconciliation/monitoring. No lane may spend the model
 credential gate or create `LIVE_UI` itself.
+
+The recorded one-hour budget expired at `2026-08-29 18:04 PDT`. Start no new
+lane or successor. Already-started bounded contract/video work may only finish
+its current acceptance/review cycle and return evidence; any additional phase
+requires a fresh user-authorized budget.
 
 ## Auto-Chain Rules
 
@@ -107,9 +117,11 @@ with FAST off. Apply the full provisional-ID health checklist in `handoff.md`.
 ## Current Next Action
 
 Unique Supervisor `01a0505f-6100-7681-9331-e8456b0126d9` owns all subsequent
-monitoring and reconciliation. This handoff task performs no further child
-management. `LIVE_UI` remains gated until both active lanes pass and a fresh
-live readback shows `/api/v1/models` non-empty.
+monitoring and reconciliation. Monitor the contract lane through independent
+review rework and its scoped commit. Start no new lane because the recorded
+budget has expired. `LIVE_UI` remains gated until that lane passes, a fresh live
+readback shows `/api/v1/models` non-empty, and the user authorizes the next
+execution budget.
 
 ## Evidence Log
 
@@ -136,10 +148,11 @@ live readback shows `/api/v1/models` non-empty.
 | Child capabilities | dynamic children inherit root tools; per-child capability isolation is not proven, so enforced tool-level read-only isolation must not be claimed |
 | Split authority | Neo stopped the monolithic implementation path; current ready DAG is contract hardening plus read-only native UI audit |
 | Unique Supervisor | `01a0505f-6100-7681-9331-e8456b0126d9`; this reconciliation task relinquishes controller authority after the final handoff |
-| TRUEFORGE_CONTRACT_HARDEN | active `01a05057-c59b-7882-834a-5ad475ba4ddd`, exact title `TrueForge Contract — Audience Styles`, first turn in progress and reading loop/skills; model/effort/tier/permission readback unverified |
-| TRUEFORGE_NATIVE_UI_AUDIT | active `01a05057-f717-72d1-8d16-d9bc8247eed7`, exact title `TrueForge UI — Design Capability Audit`, first turn in progress and reading loop/skills; model/effort/tier/permission readback unverified |
+| TRUEFORGE_CONTRACT_HARDEN | active rework `01a05057-c59b-7882-834a-5ad475ba4ddd`; 39/39 pre-review tests, both offline validators, Node syntax, and installed v0.1.4 AgentSpecSchema passed, but independent review returned `not ready to commit`; it is reproducing only the negation-bypass, dynamic/read-only topology evidence, and approval-receipt-schema findings; no scoped commit or live run yet |
+| TRUEFORGE_NATIVE_UI_AUDIT | completed read-only `01a05057-f717-72d1-8d16-d9bc8247eed7`; native OpenUI supports structure/density/limited semantic variants and native approval, not exact visual tokens, card-level selected styling, arbitrary components, or host chrome; no files changed and no successor created |
 | Native design authority | canonical Taoist Neo-Brutalism source is `/Users/yz/DaoBrewStrategy/explorations/2026-08-18-neobrutal-design-system/report.html`; use only native component controls, no custom UI workaround |
 | Current live model readback | `GET /api/v1/models` returned `count=0`; `LIVE_UI` remains credential-gated |
 | Live proof boundary | no live audience-style run, selectable-direction UI, approval styling, or host-chrome customization has been accepted |
 | Working tree | TrueForge integration files are uncommitted and owned by the single-writer hardening lane; source MOVs, `demo/**`, and `docs/plans/**` remain outside that lane |
 | `T0` | `2026-08-29 17:04 PDT` |
+| Budget gate | one-hour budget expired at `2026-08-29 18:04 PDT`; no new lane/successor may start without fresh user authorization |

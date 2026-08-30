@@ -9,6 +9,15 @@
   `codex/trueforge-content-agent` / `8b7c18f`.
 - Neo stopped the monolithic implementation path. The current authority is the
   split TrueForge contract-hardening and native-UI-audit DAG below.
+- `TRUEFORGE_NATIVE_UI_AUDIT` completed read-only. Its accepted boundary is
+  native structure/density/limited semantic variants and native approval only;
+  exact Taoist Neo-Brutalism styling, card-level selected styling, arbitrary
+  components, and host-chrome customization are not available to the manifest.
+- `TRUEFORGE_CONTRACT_HARDEN` is still active. Fresh 39/39 pre-review tests,
+  both offline validators, Node syntax, and the installed v0.1.4 AgentSpecSchema
+  passed, but independent review returned `not ready to commit`. The lane is
+  reproducing only the in-scope negation-bypass, dynamic/read-only topology
+  evidence, and approval-receipt-schema findings before rerunning its gates.
 - Verification: `loop_doctor.py --loop-dir docs/loop --json` returned `ok: true`;
   all six MOV inputs were verified untracked; no template/bad-URL markers found.
 - The working tree contains uncommitted TrueForge integration files owned by the
@@ -22,6 +31,9 @@
   user-original inputs, including `IMG_4200.mov`, but no durable accepted
   manifest exists. Every MOV remains untracked.
 - `T0=2026-08-29 17:04 PDT`.
+- The one-hour budget expired at `2026-08-29 18:04 PDT`. Start no new lane or
+  successor. Existing bounded contract/video work may only finish its current
+  acceptance/review cycle; a later phase needs a fresh user-authorized budget.
 - Output remains `package_only`, `external_action: false`.
 - User statement `剪吧，用Record and Replay弄下来` historically approved the
   separately owned VIDEO_RENDER V1; it is no longer current ready work and was
@@ -63,7 +75,11 @@ native_ui:
   design_authority: /Users/yz/DaoBrewStrategy/explorations/2026-08-18-neobrutal-design-system/report.html
   style: taoist_neo_brutalism
   custom_ui_workaround: forbidden
-  host_chrome_customization: unproven_pending_audit
+  implementation_level: native_approximation_only
+  exact_taoist_styling: unsupported_by_manifest_surface
+  card_level_selected_styling: unsupported
+  arbitrary_components: unsupported
+  host_chrome_customization: unsupported_by_agent_manifest
 audience_directions:
   exact_count: 3
   first: event_energy_outcome_led_warm_editorial
@@ -132,9 +148,9 @@ Verified TrueForge facts and current boundary:
 
 ## Ready Set and Blockers
 
-Exactly two active split lanes: `TRUEFORGE_CONTRACT_HARDEN` and
-`TRUEFORGE_NATIVE_UI_AUDIT`. They run in parallel and have disjoint write
-authority (single writer versus read-only).
+The read-only `TRUEFORGE_NATIVE_UI_AUDIT` lane is complete. The only active split
+lane is `TRUEFORGE_CONTRACT_HARDEN`; it retains exclusive write authority over
+its owned TrueForge files.
 
 Verified active project threads:
 
@@ -142,15 +158,15 @@ Verified active project threads:
   `TrueForge Contract — Audience Styles`, cwd `/Users/yz/hackathon`, active and
   `inProgress`. It is the only writer for the named TrueForge files.
 - `TRUEFORGE_NATIVE_UI_AUDIT`: `01a05057-f717-72d1-8d16-d9bc8247eed7`, title
-  `TrueForge UI — Design Capability Audit`, cwd `/Users/yz/hackathon`, active and
-  `inProgress`. It is read-only.
-- Both IDs/titles/first turns were verified with `read_thread`; both started
-  reading the loop/skill files. Creation requested `gpt-5.6-sol` with `high`, but
-  model, effort, service tier, and runtime permission context are not exposed by
-  the read API and remain unverified.
+  `TrueForge UI — Design Capability Audit`, completed read-only with its final
+  capability matrix; it changed no files and created no successor.
+- Creation requested `gpt-5.6-sol` with `high`, but model, effort, service tier,
+  and runtime permission context are not exposed by the read API and remain
+  unverified.
 
-Gated: `LIVE_UI` until both active lanes pass and a fresh live model readback is
-non-empty. Deferred/separately owned: `VIDEO_RENDER_V1`, `EVENT_RESEARCH`,
+Gated: `LIVE_UI` until contract hardening passes, the accepted native-only audit
+boundary is preserved, and a fresh live model readback is non-empty.
+Deferred/separately owned: `VIDEO_RENDER_V1`, `EVENT_RESEARCH`,
 `MEDIA_INTAKE`, `VIRAL_RESEARCH`, `RECORD_REPLAY_SKILL`, `TRANSFER_AUDIT`, and
 `QODO_SUBMISSION`.
 
@@ -158,9 +174,13 @@ Current blockers/unverified state:
 
 - live TrueForge creation is hard-blocked because the model registry is empty
   and create returns 422; never expose secret values while resolving it;
+- the recorded execution budget has expired, so even after credentials exist the
+  Supervisor must not create `LIVE_UI` without fresh user authorization;
 - fresh reconciliation readback: `GET /api/v1/models` returned `count=0`;
 - no live audience-style run, native direction-card rendering, approval-state
   styling, or host-chrome customization has been accepted;
+- the audit proves host chrome and exact visual styling are unavailable through
+  the v0.1.4 agent manifest; a successor must not add a custom UI workaround;
 - official event facts need a durable receipt and goal/audience correction;
 - all six media findings need a durable out-of-Git intake manifest;
 - viral research, approval, render, replay, transfer, and Qodo evidence do not
