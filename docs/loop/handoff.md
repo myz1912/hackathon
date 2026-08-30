@@ -2,14 +2,19 @@
 
 ## Current State
 
-- Repo/branch/base head: `/Users/yz/hackathon` /
-  `codex/trueforge-content-agent` / `56ce11c`.
-- Base loop is committed; this positioning update is local pending the requested
-  four-file control-doc commit.
+- Unique Supervisor authority is Codex task
+  `01a0505f-6100-7681-9331-e8456b0126d9`. This reconciliation task relinquishes
+  control after committing the four loop documents and issuing its final handoff.
+- Repo/branch/head at reconciliation: `/Users/yz/hackathon` /
+  `codex/trueforge-content-agent` / `8b7c18f`.
+- Neo stopped the monolithic implementation path. The current authority is the
+  split TrueForge contract-hardening and native-UI-audit DAG below.
 - Verification: `loop_doctor.py --loop-dir docs/loop --json` returned `ok: true`;
   all six MOV inputs were verified untracked; no template/bad-URL markers found.
-- No implementation, runtime thread, commit, render, QA, replay, Qodo review, or
-  external action is claimed by this bootstrap.
+- The working tree contains uncommitted TrueForge integration files owned by the
+  single-writer contract-hardening lane, plus separately owned/untracked
+  `demo/**`, `docs/plans/**`, and source MOVs. This reconciliation does not stage,
+  validate, or claim those artifacts.
 - `EVENT_RESEARCH=[~]`: read-only collaboration obtained facts, but no durable
   accepted repository receipt exists.
 - `VIRAL_RESEARCH=[ ]`: not run; no accepted evidence.
@@ -18,8 +23,9 @@
   manifest exists. Every MOV remains untracked.
 - `T0=2026-08-29 17:04 PDT`.
 - Output remains `package_only`, `external_action: false`.
-- User statement `剪吧，用Record and Replay弄下来` approves VIDEO_RENDER V1 to
-  start in parallel with TRUEFORGE_AGENT; it is not publication approval.
+- User statement `剪吧，用Record and Replay弄下来` historically approved the
+  separately owned VIDEO_RENDER V1; it is no longer current ready work and was
+  never publication approval.
 
 ## Frozen Inputs
 
@@ -53,6 +59,21 @@ video_render_v1:
   project: /Users/yz/hackathon/video/daoharness-linkedin-v1
   live_trueforge_proof: false
   viral_validated: false
+native_ui:
+  design_authority: /Users/yz/DaoBrewStrategy/explorations/2026-08-18-neobrutal-design-system/report.html
+  style: taoist_neo_brutalism
+  custom_ui_workaround: forbidden
+  host_chrome_customization: unproven_pending_audit
+audience_directions:
+  exact_count: 3
+  first: event_energy_outcome_led_warm_editorial
+  sarcastic_reaction:
+    exact_count: 1
+    evidence_label: unvalidated_creative_virality_hypothesis
+  audio:
+    preserve_visible_speaker_voice_and_room_ambience: true
+    subtitles_default: false
+    music_ducking: dynamic_by_style
 media_paths:
   - /Users/yz/hackathon/IMG_4190.mov
   - /Users/yz/hackathon/IMG_4192.mov
@@ -85,6 +106,11 @@ Exactly three agents: root `Post Director`, read-only dynamic `Viral Trend
 Researcher`, read-only dynamic `Media Analyst`. HyperFrames is a deterministic
 tool. Technical QA and package writing are root steps. No other runtime agent.
 
+Taoist Neo-Brutalism is the canonical DaoBrew product design authority. Apply it
+only through TrueForge-native direction/approval component controls proven by
+the audit. Do not treat legacy branded video outro/caption styling as the same
+thing, do not claim host-chrome control, and do not add a custom UI workaround.
+
 Verified TrueForge facts and current boundary:
 
 - Runtime is TrueForge v0.1.4.
@@ -92,8 +118,10 @@ Verified TrueForge facts and current boundary:
   no connector code is required for this MVP.
 - Register only the named root `post-director`. Its `dynamic_sub_agents` must
   create exactly Viral Trend Researcher and Media Analyst.
-- Minimal production set is exactly `trueforge/post-director.agent.json` plus
-  `scripts/trueforge-smoke.mjs`; neither file exists at this checkpoint.
+- The uncommitted integration currently includes
+  `trueforge/post-director.agent.json`, `trueforge/skills.json`,
+  `scripts/trueforge-*.mjs`, and `tests/trueforge-*.test.mjs`. Only the active
+  contract-hardening lane may change or commit them; presence is not acceptance.
 - Real API smoke acceptance must witness exactly two `thread.created` events and
   a Bright Data MCP call.
 - Hard blocker: `GET /api/v1/models` returned `[]`; agent/session create returned
@@ -104,29 +132,35 @@ Verified TrueForge facts and current boundary:
 
 ## Ready Set and Blockers
 
-Exactly two ready threads: `TRUEFORGE_AGENT` and user-approved
-`VIDEO_RENDER_V1`. They may run in parallel.
+Exactly two active split lanes: `TRUEFORGE_CONTRACT_HARDEN` and
+`TRUEFORGE_NATIVE_UI_AUDIT`. They run in parallel and have disjoint write
+authority (single writer versus read-only).
 
 Verified active project threads:
 
-- `TRUEFORGE_AGENT`: `01a05019-622d-74f2-b3b6-9fb3d2c79a68`, title
-  `GTM Agent — TRUEFORGE_AGENT`, worktree
-  `/Users/yz/.codex/worktrees/a7ff/hackathon`.
-- `VIDEO_RENDER_V1`: `01a05019-6232-78b3-b186-136f57215765`, title
-  `GTM Video — VIDEO_RENDER_V1`, worktree
-  `/Users/yz/.codex/worktrees/7418/hackathon`.
-- Both IDs were found by `list_threads` and `read_thread`; both first turns are
-  `inProgress` and started loading the named loop/skill files. Creation requested
-  `gpt-5.6-sol` with `high`; model, effort, service tier, and runtime permission
-  context are not exposed by the read API and remain unverified.
+- `TRUEFORGE_CONTRACT_HARDEN`: `01a05057-c59b-7882-834a-5ad475ba4ddd`, title
+  `TrueForge Contract — Audience Styles`, cwd `/Users/yz/hackathon`, active and
+  `inProgress`. It is the only writer for the named TrueForge files.
+- `TRUEFORGE_NATIVE_UI_AUDIT`: `01a05057-f717-72d1-8d16-d9bc8247eed7`, title
+  `TrueForge UI — Design Capability Audit`, cwd `/Users/yz/hackathon`, active and
+  `inProgress`. It is read-only.
+- Both IDs/titles/first turns were verified with `read_thread`; both started
+  reading the loop/skill files. Creation requested `gpt-5.6-sol` with `high`, but
+  model, effort, service tier, and runtime permission context are not exposed by
+  the read API and remain unverified.
 
-Deferred/gated: `EVENT_RESEARCH`, `MEDIA_INTAKE`, `VIRAL_RESEARCH`,
-`RECORD_REPLAY_SKILL`, `TRANSFER_AUDIT`, `QODO_SUBMISSION`.
+Gated: `LIVE_UI` until both active lanes pass and a fresh live model readback is
+non-empty. Deferred/separately owned: `VIDEO_RENDER_V1`, `EVENT_RESEARCH`,
+`MEDIA_INTAKE`, `VIRAL_RESEARCH`, `RECORD_REPLAY_SKILL`, `TRANSFER_AUDIT`, and
+`QODO_SUBMISSION`.
 
 Current blockers/unverified state:
 
 - live TrueForge creation is hard-blocked because the model registry is empty
   and create returns 422; never expose secret values while resolving it;
+- fresh reconciliation readback: `GET /api/v1/models` returned `count=0`;
+- no live audience-style run, native direction-card rendering, approval-state
+  styling, or host-chrome customization has been accepted;
 - official event facts need a durable receipt and goal/audience correction;
 - all six media findings need a durable out-of-Git intake manifest;
 - viral research, approval, render, replay, transfer, and Qodo evidence do not
@@ -137,52 +171,45 @@ Current blockers/unverified state:
 
 ## Exact Next Prompts
 
-Supervisor uses recorded `T0=2026-08-29 17:04 PDT`, creates exactly the two ready
-project children below in parallel, health-checks them, and implements nothing.
+The two lanes below already exist and passed the available health checks. Only
+the unique Supervisor may monitor or reconcile them. This handoff task must not
+create duplicates/successors, send follow-ups, or interrupt either lane.
 
-### TRUEFORGE_AGENT
-
-```text
-Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop files
-and project context. Own only TRUEFORGE_AGENT and preserve concurrent work.
-The product is DaoHarness on top of the TrueForge harness; the business outcome
-is raw event footage to a source-linked, approval-gated LinkedIn GTM package.
-Reread provider/model state without exposing secrets. Implement only
-trueforge/post-director.agent.json and scripts/trueforge-smoke.mjs. Register the
-named root post-director; dynamic_sub_agents creates exactly Viral Trend
-Researcher and Media Analyst. Reuse the authenticated 74-tool bright-data
-connector; write no connector code. Offline-validate while GET /api/v1/models is
-empty and create returns 422. The real smoke is accepted only after it witnesses
-exactly two thread.created events and a Bright Data MCP call. Dynamic children
-inherit root tools, so per-child capability isolation is unproven and must not be
-claimed. HyperFrames is a deterministic tool; QA/package are root steps. Test
-fail-closed approval and package_only/external_action false. No arbitrary shell,
-DaoBrew/DoubleVideo style, DaoBrew outro, pre-approval render, LinkedIn action,
-or transfer claim from SKILL.md. Record evidence/blocker, update loop files, and
-stop; create no successor.
-```
-
-### VIDEO_RENDER_V1
+### TRUEFORGE_CONTRACT_HARDEN
 
 ```text
-Use $codex-loop-engineering, $hyperframes, and $media-use in /Users/yz/hackathon.
-Read all four docs/loop files. Own only VIDEO_RENDER_V1 and the isolated project
-video/daoharness-linkedin-v1/. Preserve concurrent work and never stage or mutate
-the six source MOVs. Use the user-approved hook “You already have the content. It
-just hasn’t become GTM yet.”, the demo message “TrueForge is the harness.
-DaoHarness ships the real business need.”, the value line “DaoHarness turns what
-your business already has into what it needs to ship.”, and the product CTA “turn
-your event footage into GTM.” Build, render, and QA exactly 30 seconds with
-HyperFrames-only. This V1 is not viral-validated and must not fabricate live
-TrueForge proof; without real UI capture, label any workflow visual as planned.
-The BGM “New Bass 01” by Lily J is provisional: first use media-use resolve with
-`--type bgm --from https://assets.mixkit.co/music/720/720.mp3`, freeze it to a
-local ignored `.media` asset, verify/read back
-`https://mixkit.co/license/#musicFree`, and record source/license/provenance in
-the media ledger. Never let root download it or reference the remote URL directly
-in the composition. Stop if freeze, ledger, license readback, approval, or QA
-fails. No LinkedIn action or successor creation.
+Continue the current uncommitted TrueForge-native integration as the single
+writer. Own only trueforge/**, scripts/trueforge-*.mjs, and
+tests/trueforge-*.test.mjs. Preserve the seven pinned real Git skills, sandbox,
+native Generative UI, exactly two dynamic read-only subagents, Bright Data
+read-only, digest-bound approval, package_only, and external_action false.
+With strict TDD, require exactly three directions; event-hoster direction first;
+visible-speaker voice/room ambience, default no subtitles, and style-selected
+music ducking in every direction; exactly one materially specified
+sarcastic_reaction direction labelled an unvalidated creative virality
+hypothesis. Do not add custom UI or attempt live work while models are empty.
+Run focused/full offline validators, AgentSpec validation, diff hygiene, and
+independent review. Commit only owned files after all gates, then stop without
+editing loop docs or creating a successor.
 ```
+
+### TRUEFORGE_NATIVE_UI_AUDIT
+
+```text
+Remain read-only. Audit the TrueForge 0.1.4 native response and Generative UI
+against the canonical Taoist Neo-Brutalism source. Return an evidence-backed
+matrix of what direction cards and approval states can genuinely style versus
+what host chrome cannot customize, plus the smallest honest native-only
+recommendation. Do not edit files, configuration, registry, providers, agents,
+browser state, renders, demo, or media. Do not propose a custom UI workaround
+and create no successor.
+```
+
+### LIVE_UI (gated; do not create)
+
+Only the Supervisor may create this successor after both lanes pass and a fresh
+`GET /api/v1/models` readback is non-empty. Until then, no live audience-style,
+native design, approval UI, or host-chrome claim is allowed.
 
 ## Auto-Chain and Thread Health
 

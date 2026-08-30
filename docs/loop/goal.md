@@ -7,6 +7,10 @@ business outcome is to turn accumulated raw event footage into a usable,
 source-linked, approval-gated 30-second English LinkedIn GTM video and copy-ready
 package. Rendering is HyperFrames-only and no LinkedIn action occurs.
 
+Control authority: Codex task `01a0505f-6100-7681-9331-e8456b0126d9` is the
+unique Supervisor. Other tasks may finish an already-started bounded handoff but
+must not create, direct, replace, or interrupt execution lanes.
+
 Capture the runnable workflow with Record & Replay as a Codex skill, then audit
 that skill separately against TrueForge-native manifest/tool/run evidence. A
 `SKILL.md` alone never proves TrueForge-native execution or transferability.
@@ -24,6 +28,7 @@ that skill separately against TrueForge-native manifest/tool/run evidence. A
 | edit permission | All edit techniques permitted | confirmed; source constraints still apply |
 | CTA | Turn your event footage into GTM | confirmed product/business CTA |
 | renderer | HyperFrames-only | confirmed |
+| native UI design authority | `/Users/yz/DaoBrewStrategy/explorations/2026-08-18-neobrutal-design-system/report.html` (`Taoist Neo-Brutalism`) | confirmed; apply only through TrueForge-native component controls |
 | output | `package_only`, `external_action: false` | immutable |
 | demo message | `TrueForge is the harness. DaoHarness ships the real business need.` | confirmed |
 | value line | `DaoHarness turns what your business already has into what it needs to ship.` | confirmed for V1 |
@@ -56,16 +61,27 @@ steps, not agents.
   patterns. No accepted viral evidence exists at bootstrap.
 - TrueForge registers Post Director plus exactly the two read-only dynamic
   subagents and a real trace shows both working independently.
+- Offline TrueForge contract hardening returns exactly three distinct creative
+  directions. For event-host input, the first is event-energy/outcome-led/
+  warm-editorial; exactly one is `sarcastic_reaction`, explicitly labelled an
+  unvalidated virality hypothesis rather than a performance claim.
+- Every direction preserves visible-speaker voice and room ambience, defaults
+  to no subtitles, and specifies dynamic ducking for its selected music.
+- A read-only native UI audit distinguishes styleable direction/approval
+  component content from non-customizable TrueForge host chrome. No custom UI
+  workaround is added.
 - The six originals remain unchanged and untracked/ignored; Media Analyst emits
   an out-of-Git manifest with hashes, metadata, ownership, and timecodes.
 - Human approval binds run, event research, viral research, media manifest, and
   edit-plan digests; missing/stale/mismatched approval fails closed.
 - HyperFrames renders the 30-second English asset from original footage and
-  source-approved event assets. No DaoBrew Video/DoubleVideo house style or
-  DaoBrew outro is used.
-- VIDEO_RENDER V1 may proceed in parallel with TRUEFORGE_AGENT. V1 must not claim
-  viral validation or live TrueForge proof; without real UI capture it uses an
-  explicitly labelled honest planned-flow visual rather than a fabricated run.
+  source-approved event assets. Canonical Taoist Neo-Brutalism is allowed when
+  the deliverable calls for DaoBrew product language; legacy DaoBrew Video/
+  DoubleVideo branded outro or caption treatment is never inserted by default
+  into an event-hoster customer cut.
+- Any separately owned VIDEO_RENDER V1 must not claim viral validation or live
+  TrueForge proof; without real UI capture it uses an explicitly labelled honest
+  planned-flow visual rather than a fabricated run. It is not current ready work.
 - Root-owned technical QA and human visual review pass; root writes the LinkedIn
   package with the product CTA and `external_action: false`; no draft, queue,
   upload, or send occurs.
@@ -86,7 +102,9 @@ steps, not agents.
 - Luma remains the event-fact/source-asset authority, not the primary CTA.
 - No third-party viral-video download/reuse, generated replacement footage,
   arbitrary shell tool, secret exposure, deploy, or extra runtime agent.
-- No DaoBrew Video/DoubleVideo styling and no DaoBrew outro.
+- No automatic legacy DaoBrew Video/DoubleVideo outro or caption package in a
+  customer cut. This does not prohibit the canonical Taoist Neo-Brutalism
+  product design language.
 
 ## Read First
 

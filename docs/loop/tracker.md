@@ -10,19 +10,20 @@
 
 ## One-Hour DAG
 
-The Codex Supervisor/root is controller-only. It creates, health-checks, and
-monitors scoped project children; all implementation/research runs in children.
+Codex task `01a0505f-6100-7681-9331-e8456b0126d9` is the unique
+Supervisor/controller. All other tasks finish only their already-started bounded
+handoff or lane and must not create, direct, replace, or interrupt children.
 
 ```text
-TRUEFORGE_AGENT [READY_OFFLINE; LIVE_BLOCKED] ----\
-                                                    > TRANSFER_AUDIT
-VIDEO_RENDER_V1 [READY; USER APPROVED] -> RECORD_REPLAY_SKILL --/
+TRUEFORGE_CONTRACT_HARDEN [ACTIVE; SINGLE WRITER] ---\
+                                                       > LIVE_UI [GATED]
+TRUEFORGE_NATIVE_UI_AUDIT [ACTIVE; READ-ONLY] --------/
+                         + /api/v1/models non-empty --/
 
-TRUEFORGE_AGENT + VIDEO_RENDER_V1 + RECORD_REPLAY_SKILL + TRANSFER_AUDIT
-                                                   -> QODO_SUBMISSION
+LIVE_UI -> live audience-style/design evidence -> TRANSFER_AUDIT
 
-EVENT_RESEARCH / MEDIA_INTAKE receipts remain incomplete.
-VIRAL_RESEARCH remains deferred and is not a prerequisite for honest V1.
+Prior VIDEO_RENDER/RECORD_REPLAY/QODO work is downstream or separately owned;
+none is part of the current ready set.
 ```
 
 Only Post Director, Viral Trend Researcher, and Media Analyst are runtime agents.
@@ -35,20 +36,25 @@ not runtime agents.
 - [~] `EVENT_RESEARCH`: facts were obtained read-only; persist official sources,
   corrected goal/audience, and approved event asset ledger. Durable receipt is
   not yet accepted.
-- [ ] `TRUEFORGE_AGENT`: implement and offline-validate only
-  `trueforge/post-director.agent.json` and `scripts/trueforge-smoke.mjs`.
-  Register the named root `post-director`; `dynamic_sub_agents` creates exactly
-  Viral Trend Researcher and Media Analyst. Live create/smoke is model-blocked.
+- [~] `TRUEFORGE_CONTRACT_HARDEN`: active single-writer lane. Harden the
+  uncommitted native integration for exactly three audience directions, the
+  event-hoster first-direction/audio contract, and one explicitly unvalidated
+  `sarcastic_reaction` hypothesis. Preserve the three-agent/approval/package
+  truth boundaries and commit only lane-owned TrueForge files after tests and
+  review.
+- [~] `TRUEFORGE_NATIVE_UI_AUDIT`: active read-only lane. Audit TrueForge 0.1.4
+  native Generative UI against the canonical Taoist Neo-Brutalism source and
+  report exact component versus host-chrome styling limits. No custom UI.
+- [!] `LIVE_UI`: gated. Do not create until both active lanes pass and live
+  `/api/v1/models` is non-empty. No live audience-style/design proof exists.
 - [~] `MEDIA_INTAKE`: read-only collaboration obtained findings for all six
   originals; persist the out-of-Git manifest before accepting the checkpoint.
   Keep every original untracked/ignored and unchanged.
 - [ ] `VIRAL_RESEARCH`: deferred. It may later test the hook/CTA, but V1 must not
   claim viral validation.
-- [ ] `VIDEO_RENDER_V1`: user-approved to start with the exact frozen 30-second
-  hook/value/positioning. Build in an isolated HyperFrames project, freeze/ledger
-  BGM through `media-use`, render, and QA. If real UI capture is unavailable,
-  use an explicitly labelled honest planned-flow visual; never fabricate a live
-  TrueForge run.
+- [ ] `VIDEO_RENDER_V1`: no longer in the current ready set; preserve any
+  separately owned artifact/evidence and do not conflate it with live TrueForge
+  audience-style or native UI proof.
 - [ ] `RECORD_REPLAY_SKILL`: user records the runnable flow; package and replay
   the Codex skill with a receipt.
 - [ ] `TRANSFER_AUDIT`: verify Codex replay and TrueForge-native manifest/tool/run
@@ -60,26 +66,23 @@ not runtime agents.
 
 | Work | State | Dependency / proof |
 | --- | --- | --- |
-| `TRUEFORGE_AGENT` | `READY_OFFLINE` / `LIVE_BLOCKED` | implement/validate the two-file production set; `GET /api/v1/models` returned `[]` and create returned 422 |
-| `VIDEO_RENDER_V1` | `READY` / user-approved | exact frozen V1 brief, six source MOVs, official approved event cover; runs in parallel with TRUEFORGE_AGENT |
+| `TRUEFORGE_CONTRACT_HARDEN` | `ACTIVE` / single writer | task `01a05057-c59b-7882-834a-5ad475ba4ddd`; owns only `trueforge/**`, `scripts/trueforge-*.mjs`, `tests/trueforge-*.test.mjs` |
+| `TRUEFORGE_NATIVE_UI_AUDIT` | `ACTIVE` / read-only | task `01a05057-f717-72d1-8d16-d9bc8247eed7`; canonical source + TrueForge 0.1.4 native surface |
+| `LIVE_UI` | `GATED` | both active lanes pass and `/api/v1/models` becomes non-empty |
+| `VIDEO_RENDER_V1` | `DEFERRED_SEPARATE_OWNER` | not current ready work; does not prove live TrueForge/UI behavior |
 | `EVENT_RESEARCH` | `DEFERRED_TO_RECEIPT` / `[~]` | official-source receipt still incomplete; V1 may use only already approved official assets |
 | `MEDIA_INTAKE` | `CONSUMED_AS_INPUT` / `[~]` | findings exist; six originals remain read-only/untracked; durable manifest still incomplete |
 | `VIRAL_RESEARCH` | `DEFERRED` | no accepted evidence; not a V1 prerequisite and must not be claimed |
-| `RECORD_REPLAY_SKILL` | `GATED` | runnable V1 video/flow + user actual recording |
+| `RECORD_REPLAY_SKILL` | `GATED` | runnable accepted flow + user actual recording |
 | `TRANSFER_AUDIT` | `GATED` | TrueForge evidence + successful Codex replay |
 | `QODO_SUBMISSION` | `GATED` | all prior deliverable evidence |
 
-## Budget
+## Current Split-Run Budget
 
-| Window | Target |
-| --- | --- |
-| `T+00–10` | launch TRUEFORGE_AGENT and approved VIDEO_RENDER_V1 in parallel |
-| `T+10–40` | offline TrueForge work; isolated HyperFrames build/render/QA with honest evidence labels |
-| `T+40–50` | real Record & Replay capture and replay |
-| `T+50–55` | transfer audit |
-| `T+55–60` | Qodo/submission evidence or exact blocker packet |
-
-At `T+60`, stop new work and report evidence honestly; never weaken a gate.
+Each active lane is one bounded checkpoint. Contract hardening stops after its
+owned commit and evidence; UI audit stops after its read-only matrix. The
+Supervisor performs only reconciliation/monitoring. No lane may spend the model
+credential gate or create `LIVE_UI` itself.
 
 ## Auto-Chain Rules
 
@@ -103,15 +106,16 @@ with FAST off. Apply the full provisional-ID health checklist in `handoff.md`.
 
 ## Current Next Action
 
-`T0` is `2026-08-29 17:04 PDT`. Launch exactly two ready project threads in
-parallel: `TRUEFORGE_AGENT` and user-approved `VIDEO_RENDER_V1`. Do not open an
-EVENT_RESEARCH, MEDIA_INTAKE, VIRAL_RESEARCH, or RECORD_REPLAY_SKILL thread now.
+Unique Supervisor `01a0505f-6100-7681-9331-e8456b0126d9` owns all subsequent
+monitoring and reconciliation. This handoff task performs no further child
+management. `LIVE_UI` remains gated until both active lanes pass and a fresh
+live readback shows `/api/v1/models` non-empty.
 
 ## Evidence Log
 
 | Item | Current truth |
 | --- | --- |
-| Loop bootstrap | `loop_doctor.py` returned `ok: true`; four local uncommitted loop files; no implementation/threads/commit |
+| Loop bootstrap | `docs/loop/**` is committed on the current branch; latest reconciliation `loop_doctor.py` returned `ok: true` before this edit |
 | Event facts | obtained read-only; durable receipt not accepted; `[~]` |
 | Viral patterns | not run; no accepted evidence |
 | Product positioning | customer=event hoster; product=DaoHarness on top of TrueForge harness; outcome=raw event footage to usable/source-linked/approval-gated LinkedIn GTM video/package |
@@ -123,12 +127,19 @@ EVENT_RESEARCH, MEDIA_INTAKE, VIRAL_RESEARCH, or RECORD_REPLAY_SKILL thread now.
 | BGM | provisional `New Bass 01` by Lily J; remote source/license recorded in handoff; not frozen or accepted until VIDEO_RENDER runs `media-use` and writes ledger |
 | VIDEO_RENDER V1 approval | user statement `剪吧，用Record and Replay弄下来` authorizes V1 build/render under the frozen brief; it does not prove viral performance, live TrueForge, publication, or outcome |
 | V1 evidence boundary | no real UI capture may be replaced only by an explicitly labelled planned-flow visual; fake session/run evidence is prohibited |
-| TRUEFORGE_AGENT thread | verified active `01a05019-622d-74f2-b3b6-9fb3d2c79a68`; title/worktree/first turn confirmed; requested model/effort but tier and runtime permission context unexposed |
-| VIDEO_RENDER_V1 thread | verified active `01a05019-6232-78b3-b186-136f57215765`; title/worktree/first turn confirmed; requested model/effort but tier and runtime permission context unexposed |
+| Historical monolithic tasks | prior TRUEFORGE_AGENT/VIDEO_RENDER task IDs are not current ready lanes and must not be duplicated or mistaken for current live proof |
 | Media | read-only findings obtained for all six originals, including `IMG_4200.mov`; durable manifest not accepted; `[~]` |
 | TrueForge runtime | v0.1.4; Bright Data connector authenticated with 74 tools; no connector code required |
-| Agent production set | planned minimum is `trueforge/post-director.agent.json` + `scripts/trueforge-smoke.mjs`; both absent at this checkpoint |
+| Uncommitted integration | `trueforge/**`, `scripts/trueforge-*.mjs`, and `tests/trueforge-*.test.mjs` exist locally but remain unaccepted until the single-writer lane passes and commits only owned files |
 | Live smoke contract | must witness exactly two `thread.created` events and a Bright Data MCP call; not accepted while model creation is blocked |
 | Model blocker | `GET /api/v1/models` returned `[]`; create returned HTTP 422 |
 | Child capabilities | dynamic children inherit root tools; per-child capability isolation is not proven, so enforced tool-level read-only isolation must not be claimed |
+| Split authority | Neo stopped the monolithic implementation path; current ready DAG is contract hardening plus read-only native UI audit |
+| Unique Supervisor | `01a0505f-6100-7681-9331-e8456b0126d9`; this reconciliation task relinquishes controller authority after the final handoff |
+| TRUEFORGE_CONTRACT_HARDEN | active `01a05057-c59b-7882-834a-5ad475ba4ddd`, exact title `TrueForge Contract — Audience Styles`, first turn in progress and reading loop/skills; model/effort/tier/permission readback unverified |
+| TRUEFORGE_NATIVE_UI_AUDIT | active `01a05057-f717-72d1-8d16-d9bc8247eed7`, exact title `TrueForge UI — Design Capability Audit`, first turn in progress and reading loop/skills; model/effort/tier/permission readback unverified |
+| Native design authority | canonical Taoist Neo-Brutalism source is `/Users/yz/DaoBrewStrategy/explorations/2026-08-18-neobrutal-design-system/report.html`; use only native component controls, no custom UI workaround |
+| Current live model readback | `GET /api/v1/models` returned `count=0`; `LIVE_UI` remains credential-gated |
+| Live proof boundary | no live audience-style run, selectable-direction UI, approval styling, or host-chrome customization has been accepted |
+| Working tree | TrueForge integration files are uncommitted and owned by the single-writer hardening lane; source MOVs, `demo/**`, and `docs/plans/**` remain outside that lane |
 | `T0` | `2026-08-29 17:04 PDT` |
