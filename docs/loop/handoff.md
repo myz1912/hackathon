@@ -107,6 +107,19 @@ Verified TrueForge facts and current boundary:
 Exactly two ready threads: `TRUEFORGE_AGENT` and user-approved
 `VIDEO_RENDER_V1`. They may run in parallel.
 
+Verified active project threads:
+
+- `TRUEFORGE_AGENT`: `01a05019-622d-74f2-b3b6-9fb3d2c79a68`, title
+  `GTM Agent — TRUEFORGE_AGENT`, worktree
+  `/Users/yz/.codex/worktrees/a7ff/hackathon`.
+- `VIDEO_RENDER_V1`: `01a05019-6232-78b3-b186-136f57215765`, title
+  `GTM Video — VIDEO_RENDER_V1`, worktree
+  `/Users/yz/.codex/worktrees/7418/hackathon`.
+- Both IDs were found by `list_threads` and `read_thread`; both first turns are
+  `inProgress` and started loading the named loop/skill files. Creation requested
+  `gpt-5.6-sol` with `high`; model, effort, service tier, and runtime permission
+  context are not exposed by the read API and remain unverified.
+
 Deferred/gated: `EVENT_RESEARCH`, `MEDIA_INTAKE`, `VIRAL_RESEARCH`,
 `RECORD_REPLAY_SKILL`, `TRANSFER_AUDIT`, `QODO_SUBMISSION`.
 

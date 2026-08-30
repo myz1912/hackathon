@@ -123,6 +123,8 @@ EVENT_RESEARCH, MEDIA_INTAKE, VIRAL_RESEARCH, or RECORD_REPLAY_SKILL thread now.
 | BGM | provisional `New Bass 01` by Lily J; remote source/license recorded in handoff; not frozen or accepted until VIDEO_RENDER runs `media-use` and writes ledger |
 | VIDEO_RENDER V1 approval | user statement `剪吧，用Record and Replay弄下来` authorizes V1 build/render under the frozen brief; it does not prove viral performance, live TrueForge, publication, or outcome |
 | V1 evidence boundary | no real UI capture may be replaced only by an explicitly labelled planned-flow visual; fake session/run evidence is prohibited |
+| TRUEFORGE_AGENT thread | verified active `01a05019-622d-74f2-b3b6-9fb3d2c79a68`; title/worktree/first turn confirmed; requested model/effort but tier and runtime permission context unexposed |
+| VIDEO_RENDER_V1 thread | verified active `01a05019-6232-78b3-b186-136f57215765`; title/worktree/first turn confirmed; requested model/effort but tier and runtime permission context unexposed |
 | Media | read-only findings obtained for all six originals, including `IMG_4200.mov`; durable manifest not accepted; `[~]` |
 | TrueForge runtime | v0.1.4; Bright Data connector authenticated with 74 tools; no connector code required |
 | Agent production set | planned minimum is `trueforge/post-director.agent.json` + `scripts/trueforge-smoke.mjs`; both absent at this checkpoint |
