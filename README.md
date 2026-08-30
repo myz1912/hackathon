@@ -9,6 +9,9 @@ Built 29 August 2026 for the TrueForge Agent Harness Hackathon.
 > packet with `external_action: false`. Direct posting would require a separate
 > exact-action approval and a platform connector, and neither exists here.
 
+**[DEMO.md](DEMO.md) is the runbook** — the TrueForge agent, MCP server and model provider
+are already configured and verified live.
+
 ## Run it
 
 ```bash
@@ -78,12 +81,16 @@ Clean install from `package.json`, `node_modules` and lockfile removed first:
 ```
 npm install         0 vulnerabilities
 npx tsc --noEmit    exit 0
-npx vitest run      6 files, 25 tests passed
+npx vitest run      8 files, 31 tests passed
 ```
 
 ## Honest limits
 
-- Live Bright Data requires `BRIGHT_DATA_API_TOKEN` (or `BRIGHTDATA_API_KEY`). Missing
+- The in-repo pipeline's subagents run in-process; the TrueForge agent performs research
+  through the Bright Data MCP server. They are two surfaces over the same contracts, not
+  the same execution path.
+- Live Bright Data requires `BRIGHT_DATA_API_TOKEN`, `BRIGHTDATA_API_KEY`, or a stored
+  `brightdata login`. Missing
   credentials produce fixture provenance; present credentials with a failed call produce
   an error and never silently use fixtures.
 - TrueForge registration and trace commands require a configured model provider. They fail
@@ -94,6 +101,22 @@ npx vitest run      6 files, 25 tests passed
 
 Nothing in this README describes a capability that has not been run. Where something is
 unbuilt, it is listed above.
+
+## Running as a TrueForge agent
+
+Configured and verified live on 2026-08-29 — see [docs/evidence](docs/evidence/):
+
+| | |
+|---|---|
+| Model provider | `openai` → `gpt-5.6-sol` |
+| Agent | `postforge-director` |
+| MCP server | `brightdata` — authenticated, 5 tools discovered |
+| Tools enabled | `search_engine`, `scrape_as_markdown` — read-only |
+| Approval gating | `@write`, `@destructive` — enforced by TrueForge, not reimplemented here |
+
+One recorded session produced **9 MCP tool responses** (5590 in / 1465 out tokens) and an
+edit plan citing four URLs returned by live search. Raw events:
+[`docs/evidence/trueforge-session-events.json`](docs/evidence/trueforge-session-events.json).
 
 ## Setup note
 
