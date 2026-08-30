@@ -1,0 +1,13 @@
+{
+  "running": null,
+  "summary": {"total": 7, "green": 0, "amber": 0, "blue": 1, "footer": "0 of 7 witnessed live; 1 merged-but-unwitnessed, 0 stale-build."},
+  "rows": [
+    {"id":"H0","label":"Honest hackathon repository baseline","codeState":"merged","evidence":"none","color":"blue","reason":"merged, not witnessed live"},
+    {"id":"CTX","label":"Project context and ownership package","codeState":"planned","evidence":"none","color":"grey","reason":"no feature-SHA — this is planned, not a status claim"},
+    {"id":"TF","label":"TrueForge agent execution","codeState":"planned","evidence":"none","color":"grey","reason":"no feature-SHA — this is planned, not a status claim"},
+    {"id":"BD","label":"Bright Data live research evidence","codeState":"planned","evidence":"none","color":"grey","reason":"no feature-SHA — this is planned, not a status claim"},
+    {"id":"MA","label":"Multi-agent orchestration trace","codeState":"planned","evidence":"none","color":"grey","reason":"no feature-SHA — this is planned, not a status claim"},
+    {"id":"VID","label":"HyperFrames video render and QA","codeState":"planned","evidence":"none","color":"grey","reason":"no feature-SHA — this is planned, not a status claim"},
+    {"id":"QD","label":"Qodo initial and follow-up PR review","codeState":"planned","evidence":"none","color":"grey","reason":"no feature-SHA — this is planned, not a status claim"}
+  ]
+}

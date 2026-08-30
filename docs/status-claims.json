@@ -1,0 +1,32 @@
+[
+  {
+    "id": "H0",
+    "label": "Honest hackathon repository baseline",
+    "sha": "039d7ecdfb99245dab81fd0e6a3713c991208ff0",
+    "target": "main"
+  },
+  {
+    "id": "CTX",
+    "label": "Project context and ownership package"
+  },
+  {
+    "id": "TF",
+    "label": "TrueForge agent execution"
+  },
+  {
+    "id": "BD",
+    "label": "Bright Data live research evidence"
+  },
+  {
+    "id": "MA",
+    "label": "Multi-agent orchestration trace"
+  },
+  {
+    "id": "VID",
+    "label": "HyperFrames video render and QA"
+  },
+  {
+    "id": "QD",
+    "label": "Qodo initial and follow-up PR review"
+  }
+]
