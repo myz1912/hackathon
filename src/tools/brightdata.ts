@@ -24,6 +24,7 @@ export class ResearchToolError extends Error {
   readonly exitCode: number | null;
   readonly stderr: string;
   receiptPath: string | undefined;
+  receiptFailure: unknown = undefined;
 
   constructor(
     message: string,
@@ -169,12 +170,13 @@ export async function runBrightDataCommand(
   const env = options.env ?? process.env;
   const spawner = options.spawner ?? spawn;
   const credential = credentialFrom(env);
-  // Verified with `brightdata --help`: --api-key is a global option and must precede the subcommand.
-  const commandArgs = [...(credential ? ["--api-key", credential] : []), subcommand, ...args];
+  const commandArgs = [subcommand, ...args];
+  // @brightdata/cli reads BRIGHTDATA_API_KEY; keep credentials out of the process argv.
+  const commandEnv = credential ? { ...env, BRIGHTDATA_API_KEY: credential } : env;
 
   return await new Promise<BrightDataCommandResult>((resolve, reject) => {
     const child = spawner(binary, commandArgs, {
-      env,
+      env: commandEnv,
       shell: false,
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -250,7 +252,10 @@ export class BrightDataCli implements ResearchTool {
     return (await this.searchWithReceipt(query, limit)).report;
   }
 
-  async searchWithReceipt(query: string, limit: number): Promise<{ report: ResearchReport; receiptPath: string }> {
+  async searchWithReceipt(
+    query: string,
+    limit: number,
+  ): Promise<{ report: ResearchReport; receiptPath?: string }> {
     const startedAt = Date.now();
     const collectedAt = new Date().toISOString();
     let report: ResearchReport | undefined;
@@ -279,19 +284,28 @@ export class BrightDataCli implements ResearchTool {
       exitCode = failure.exitCode;
     }
 
-    const receiptPath = await this.#options.receiptWriter({
-      query,
-      findings: report?.findings ?? [],
-      cliExitCode: exitCode,
-      durationMs: Math.max(0, Date.now() - startedAt),
-    });
-    this.lastReceiptPath = receiptPath;
+    let receiptPath: string | undefined;
+    try {
+      receiptPath = await this.#options.receiptWriter({
+        query,
+        findings: report?.findings ?? [],
+        cliExitCode: exitCode,
+        durationMs: Math.max(0, Date.now() - startedAt),
+      });
+      this.lastReceiptPath = receiptPath;
+    } catch (receiptFailure) {
+      if (failure) {
+        failure.receiptFailure = receiptFailure;
+        if (failure.cause === undefined) failure.cause = receiptFailure;
+        throw failure;
+      }
+    }
     if (failure) {
       failure.receiptPath = receiptPath;
       throw failure;
     }
     if (!report) throw new ResearchToolError("Bright Data produced no report", "INVALID_OUTPUT", { exitCode });
-    return { report, receiptPath };
+    return { report, ...(receiptPath === undefined ? {} : { receiptPath }) };
   }
 }
 
@@ -323,8 +337,8 @@ export class FixtureResearch implements ResearchTool {
 }
 
 /**
- * The CLI can authenticate two ways: an explicit key via `-k/--api-key`, or credentials
- * stored on disk by `brightdata login`. Treat a stored login as valid credentials —
+ * The CLI can authenticate via `BRIGHTDATA_API_KEY` or credentials stored on disk by
+ * `brightdata login`. Treat a stored login as valid credentials —
  * otherwise a logged-in machine silently degrades to fixtures, which is the exact
  * dishonesty this module exists to prevent.
  */

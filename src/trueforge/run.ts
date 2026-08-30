@@ -10,6 +10,7 @@ import {
   type PendingApproval,
 } from "./hitl.js";
 import { ensurePostForgeAgent } from "./register.js";
+import { sessionArtifactPath } from "./safe-id.js";
 
 type Mode = "allow-all" | "deny-all" | "interactive";
 
@@ -105,8 +106,8 @@ async function main(): Promise<void> {
   });
 
   const artifactDir = join(process.cwd(), "artifacts");
-  const artifactPath = join(artifactDir, `turn-${session.id}.json`);
   await mkdir(artifactDir, { recursive: true });
+  const artifactPath = sessionArtifactPath(artifactDir, "turn-", session.id);
   await writeFile(artifactPath, `${JSON.stringify(result.events, null, 2)}\n`, "utf8");
 
   trace("artifact", artifactPath);

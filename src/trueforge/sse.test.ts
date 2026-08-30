@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSSE } from "./sse.js";
+import { parseSSE, SseFrameTooLargeError } from "./sse.js";
 
 function chunkedStream(chunks: readonly string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -38,4 +38,29 @@ describe("parseSSE", () => {
 
     expect(messages).toEqual([{ event: "turn.done", data: "first line\nsecond line" }]);
   });
+
+  it("cancels and rejects a stream whose undelimited frame exceeds the limit", async () => {
+    const encoder = new TextEncoder();
+    let cancelled = false;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode("data: 123456789"));
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+
+    await expect(collectWithLimit(stream, 8)).rejects.toBeInstanceOf(SseFrameTooLargeError);
+    expect(cancelled).toBe(true);
+  });
 });
+
+async function collectWithLimit(
+  stream: ReadableStream<Uint8Array>,
+  maxFrameBytes: number,
+): Promise<{ event?: string; data: string }[]> {
+  const messages: { event?: string; data: string }[] = [];
+  for await (const message of parseSSE(stream, { maxFrameBytes })) messages.push(message);
+  return messages;
+}

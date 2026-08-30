@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { TrueForgeClient, type TrueForgeEvent, type TrueForgeTurn } from "./client.js";
 import { ensurePostForgeAgent } from "./register.js";
+import { sessionArtifactPath } from "./safe-id.js";
 
 async function waitForTerminalTurn(
   client: TrueForgeClient,
@@ -72,8 +73,8 @@ async function main(): Promise<void> {
   await waitForTerminalTurn(client, session.id, turn);
   const events = await client.listEvents(session.id);
   const artifactDir = join(process.cwd(), "artifacts");
-  const path = join(artifactDir, `trueforge-session-${session.id}.json`);
   await mkdir(artifactDir, { recursive: true });
+  const path = sessionArtifactPath(artifactDir, "trueforge-session-", session.id);
   await writeFile(path, `${JSON.stringify(events, null, 2)}\n`, "utf8");
   const summary = summarizeEvents(events);
   process.stdout.write(`artifact: ${path}\n`);
