@@ -1,5 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { assertReadOnlySubcommand, normalizeBrightDataPayload, ResearchToolError } from "./brightdata.js";
+import { spawn } from "node:child_process";
+import { describe, expect, it, vi } from "vitest";
+import {
+  assertReadOnlySubcommand,
+  normalizeBrightDataPayload,
+  ResearchToolError,
+  runBrightDataCommand,
+} from "./brightdata.js";
+import { READ_ONLY_TOOL_IDS, ToolDeniedError, assertToolAllowed } from "./policy.js";
 
 describe("normalizeBrightDataPayload", () => {
   it("preserves source URLs and source timestamps while dropping URL-less findings", () => {
@@ -47,6 +54,26 @@ describe("normalizeBrightDataPayload", () => {
 });
 
 describe("Bright Data read-only allowlist", () => {
+  it("permits each frozen read-only tool ID", () => {
+    expect(Object.isFrozen(READ_ONLY_TOOL_IDS)).toBe(true);
+    for (const toolId of READ_ONLY_TOOL_IDS) expect(() => assertToolAllowed(toolId)).not.toThrow();
+  });
+
+  it.each([
+    "brightdata.web_data_amazon_product",
+    "brightdata.scraping_browser_navigate",
+  ])("denies unlisted tool ID %s", (toolId) => {
+    expect(() => assertToolAllowed(toolId)).toThrow(ToolDeniedError);
+  });
+
+  it("denies an unlisted tool before spawning a process", async () => {
+    const spawner = vi.fn() as unknown as typeof spawn;
+    await expect(
+      runBrightDataCommand("brightdata.scraping_browser_navigate", "search", ["query"], { spawner }),
+    ).rejects.toThrow(ToolDeniedError);
+    expect(spawner).not.toHaveBeenCalled();
+  });
+
   it("permits search and scrape", () => {
     expect(() => assertReadOnlySubcommand("search")).not.toThrow();
     expect(() => assertReadOnlySubcommand("scrape")).not.toThrow();

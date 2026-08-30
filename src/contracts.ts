@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MEDIA_ROOT, resolveWithinRoot } from "./safepath.js";
 
 const nonEmptyString = z.string().trim().min(1);
 const isoTimestamp = z.iso.datetime({ offset: true });
@@ -121,16 +122,26 @@ export const PublishPacketSchema = z
 export type PublishPacket = z.infer<typeof PublishPacketSchema>;
 
 /** Validates segment timing against probed media and requires one URL citation per edit choice. */
-export function validateEditPlan(plan: EditPlan, probes: readonly MediaProbe[]): EditPlan {
+export function validateEditPlan(
+  plan: EditPlan,
+  probes: readonly MediaProbe[],
+  mediaRoot = MEDIA_ROOT,
+): EditPlan {
   const parsedPlan = EditPlanSchema.parse(plan);
-  const probeByPath = new Map(probes.map((probe) => [probe.path, MediaProbeSchema.parse(probe)]));
+  const probeByPath = new Map(
+    probes.map((probe) => {
+      const parsedProbe = MediaProbeSchema.parse(probe);
+      return [resolveWithinRoot(mediaRoot, parsedProbe.path), parsedProbe] as const;
+    }),
+  );
 
   if (parsedPlan.citations.length < parsedPlan.segments.length) {
     throw new Error("Each edit segment must have a citation");
   }
 
   for (const segment of parsedPlan.segments) {
-    const probe = probeByPath.get(segment.sourcePath);
+    const resolvedSourcePath = resolveWithinRoot(mediaRoot, segment.sourcePath);
+    const probe = probeByPath.get(resolvedSourcePath);
     if (!probe) {
       throw new Error(`No media probe exists for ${segment.sourcePath}`);
     }

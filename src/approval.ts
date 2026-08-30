@@ -6,11 +6,14 @@ export interface ProposedAction {
   readonly argv: readonly string[];
   readonly touches: readonly string[];
   readonly description: string;
+  readonly planDigest: string;
+  readonly digest: string;
 }
 
 export interface ApprovalDecision {
   readonly approved: boolean;
   readonly reason: string;
+  readonly approvedDigest: string;
 }
 
 export interface ApprovalGate {
@@ -18,8 +21,8 @@ export interface ApprovalGate {
 }
 
 export class AutoDenyGate implements ApprovalGate {
-  async request(_action: ProposedAction): Promise<ApprovalDecision> {
-    return { approved: false, reason: "denied by policy" };
+  async request(action: ProposedAction): Promise<ApprovalDecision> {
+    return { approved: false, reason: "denied by policy", approvedDigest: action.digest };
   }
 }
 
@@ -33,12 +36,20 @@ export class AutoApproveGate implements ApprovalGate {
     this.#remainingApprovals = approvalCount;
   }
 
-  async request(_action: ProposedAction): Promise<ApprovalDecision> {
+  async request(action: ProposedAction): Promise<ApprovalDecision> {
     if (this.#remainingApprovals === 0) {
-      return { approved: false, reason: "no action-scoped approval remains" };
+      return {
+        approved: false,
+        reason: "no action-scoped approval remains",
+        approvedDigest: action.digest,
+      };
     }
     this.#remainingApprovals -= 1;
-    return { approved: true, reason: "approved for this action only" };
+    return {
+      approved: true,
+      reason: "approved for this action only",
+      approvedDigest: action.digest,
+    };
   }
 }
 
@@ -56,6 +67,8 @@ export class CliApprovalGate implements ApprovalGate {
       `Tool:    ${action.tool}`,
       `Argv:    ${JSON.stringify(action.argv)}`,
       `Touches: ${action.touches.join(", ")}`,
+      `Plan:    ${action.planDigest}`,
+      `Digest:  ${action.digest}`,
       `Action:  ${action.description}`,
     ];
     this.#output.write(`${lines.join("\n")}\n`);
@@ -63,8 +76,12 @@ export class CliApprovalGate implements ApprovalGate {
     try {
       const answer = (await reader.question("Approve this one action? [y/N] ")).trim().toLowerCase();
       return answer === "y" || answer === "yes"
-        ? { approved: true, reason: "approved by operator for this action only" }
-        : { approved: false, reason: "denied by operator" };
+        ? {
+            approved: true,
+            reason: "approved by operator for this action only",
+            approvedDigest: action.digest,
+          }
+        : { approved: false, reason: "denied by operator", approvedDigest: action.digest };
     } finally {
       reader.close();
     }

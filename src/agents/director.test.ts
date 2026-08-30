@@ -74,7 +74,7 @@ describe("runDirector", () => {
     const result = await runDirector(brief, {
       researchTool,
       async probeMedia() { return probe; },
-      approval: { approved: true, reason: "approved in test" },
+      approval: { approved: true, reason: "approved in test", approvedDigest: "director-test" },
     });
 
     expect(result.status).toBe("complete");
