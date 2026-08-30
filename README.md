@@ -1,217 +1,274 @@
-# DaoBrew PostForge
+# DaoHarness
 
-A TrueForge-native multi-agent workflow that turns a goal, audience, platform, and owned
-media into a researched, source-cited, QA-verified, copy-ready social post package.
+DaoHarness starts from a real business need and turns repeated, human-directed
+work into a bounded capability. This hackathon proof focuses on one need:
+helping an event organizer turn owned event footage into a 30-second LinkedIn
+GTM video.
 
-Built 29 August 2026 for the TrueForge Agent Harness Hackathon.
+The user talks to a TrueForge-native `post-director` in natural language,
+chooses one business outcome, reviews the plan, and approves a restricted
+render tool. Two dynamic subagents research public content patterns and rank
+candidate event moments. A fixed HyperFrames bridge then renders a local video
+with foreground contemporary jazz and lower room-voice ambience.
 
-> **Truth boundary.** `package-ready` is not `published`. The pipeline stops at a verified
-> packet with `external_action: false`. Direct posting would require a separate
-> exact-action approval and a platform connector, and neither exists here.
+## Demo
 
-**[DEMO.md](DEMO.md) is the runbook** — the TrueForge agent, MCP server and model provider
-are already configured and verified live.
+[Watch or download the 2:58 demo video](demo/daoharness-trueforge-demo.mp4).
 
-## Run it
+The repository copy is H.264/AAC, 576x720 at 30 fps, 178.242 seconds, and
+15,446,255 bytes. It is a duration-compliant derivative of the original screen
+recording in `/Users/yz/Downloads/Area.mp4`; the complete recording was sped up
+slightly rather than cut before the final product preview.
+
+## What the demo proves
+
+- A natural-language event-promotion need enters TrueForge.
+- Native TrueForge UI presents three business-outcome choices.
+- The user selects one outcome.
+- `Viral Trend Researcher` and `Media Analyst` run as two dynamic subagents.
+- Bright Data supplies read-only, source-linked public research.
+- TrueForge stops at native human approval before `render_event_gtm`.
+- The allowlisted local MCP bridge renders a 30-second DaoHarness video.
+- The accepted audio mix keeps contemporary jazz in front and room voices
+  approximately 8 dB lower.
+- The generated video contains no TrueForge or PostForge branding.
+
+## Architecture
+
+```text
+Natural-language business need
+        |
+        v
+TrueForge root: post-director
+        |-- Viral Trend Researcher -> Bright Data MCP (read-only)
+        `-- Media Analyst -> fixed owned-media manifest
+        |
+        v
+Three business-outcome directions
+        |
+        v
+Human choice -> source-linked edit plan -> native approval
+        |
+        v
+daoharness-render-bridge MCP
+        |
+        v
+HyperFrames -> local H.264/AAC video -> playback/download link
+```
+
+The bridge is intentionally narrow:
+
+- exactly six allowlisted source MOV filenames;
+- bounded source timecodes;
+- digest-bound plan and approval receipt;
+- one pinned HyperFrames executable and fixed argument array;
+- one ignored local output root;
+- no arbitrary shell surface;
+- no LinkedIn upload or external publication.
+
+## Repository structure
+
+```text
+trueforge/post-director.agent.json       TrueForge agent manifest
+trueforge/skills.json                    Seven pinned Git skills
+trueforge/render-bridge.mcp.json         Local MCP connector declaration
+scripts/trueforge-skills.mjs             Skill validation and live sync
+scripts/trueforge-smoke.mjs              Offline/live agent validation
+scripts/trueforge-render-bridge.mjs      Restricted media/render MCP bridge
+tests/trueforge-skills.test.mjs          Skill-registry tests
+tests/trueforge-smoke.test.mjs           Agent/session/evidence tests
+tests/trueforge-render-bridge.test.mjs   Render-bridge and audio gates
+demo/daoharness-trueforge-demo.mp4        Submission demo recording
+```
+
+## Local setup
+
+Prerequisites:
+
+- Node.js 22 or newer
+- FFmpeg and ffprobe
+- TrueForge 0.1.4 running on `127.0.0.1:8790`
+- one model configured in TrueForge Settings -> Models
+- the six owned event MOVs stored outside Git
+
+Run the non-secret validation gates:
 
 ```bash
-npm install
-npm run verify                 # typecheck + 31 tests, no network, no credentials
-npm run demo -- --approve      # full run, writes a packet
-npm run demo -- --deny         # denial path: nothing is written
-npm run demo -- --tamper       # approve a plan, mutate it, watch the gate refuse
-npm run research:live -- "short form video hooks"
-npm run tf:register            # requires a configured TrueForge model provider
-npm run tf:run -- "<message>"  # one turn, approvals answered live, trace written
-npm run tf:render -- inputs cards   # stage media in the sandbox, agent renders the cut
-npm run tf:trace               # writes artifacts/trueforge-session-<id>.json
+node --test tests/trueforge-*.test.mjs
+node scripts/trueforge-skills.mjs --offline
+node scripts/trueforge-smoke.mjs --offline
+node scripts/trueforge-render-bridge.mjs --offline
 ```
 
-Node ≥ 22. Tests run entirely offline against fixtures and stubbed process/HTTP layers.
+Sync skills and register the local bridge:
 
-## What it does
-
-```
-brief + owned media
-        │
-        ▼
-  Post Director  ──┬── Trend Researcher  → Bright Data (read-only, allowlisted)
-                   └── Media Analyst     → ffprobe (fixed argv, confined paths)
-        │                    ↑ these two run in parallel
-        ▼
-  source-cited edit plan
-        │
-        ▼
-  human approval  ── bound to a SHA-256 digest of the exact plan
-        │
-        ▼
-  QA → publish packet  (external_action: false)
+```bash
+node scripts/trueforge-skills.mjs --live
+node scripts/trueforge-render-bridge.mjs --register
+node scripts/trueforge-render-bridge.mjs --serve
 ```
 
-## The write gate
+Check live readiness without creating an agent or session:
 
-Every write announces its exact tool and argv before running, and the approval is bound to
-a **digest of the plan the human actually saw**. `renderPackage` recomputes that digest
-immediately before writing and refuses on any difference. There is no bypass flag.
-
-`npm run demo -- --tamper` approves a plan, mutates one timecode, and attempts the render:
-
-```
-16  approval_requested  planDigest 19fbb510…  digest 21a21134…
-17  approval_decided    approved=true         approvedDigest 21a21134…
-18  approval_mismatch   approved 21a21134…    current f9e4c18a…
+```bash
+TRUEFORGE_MODEL='openai/gpt-5-6-sol' \
+  node scripts/trueforge-smoke.mjs --live-preflight
 ```
 
-Measured in isolation with `artifacts/` removed first: **tamper writes 0 files, approve
-writes exactly 1.** Approving one action does not authorize the next.
+Open `http://127.0.0.1:8790`, select `post-director`, and describe the event's
+audience and desired outcome in natural language.
 
-## Guarantees, and how each is enforced
+## Verification snapshot
 
-| Guarantee | Mechanism |
-|---|---|
-| No fabricated sources | Findings arriving without a URL are dropped, never invented. Every edit-plan segment must cite a real finding URL or validation fails. |
-| Read-only research | Frozen tool-id allowlist, **deny by default**, enforced before any process spawn (`src/tools/policy.ts`). |
-| Media stays confined | `resolveWithinRoot` resolves the media root via `realpath` and rejects traversal, absolute outside paths, symlink escapes, and sibling-prefix collisions (`/media-evil` ≠ `/media`). |
-| Approval means what it says | Plan digest binding, above (`src/digest.ts`). |
-| Parallelism is provable | Per-subagent spans in an append-only trace, not an assertion in prose. |
-| No shell injection | Every external process gets a fixed argv array; never a shell string. |
+Latest local verification before publication:
 
-## Verification
+- 55/55 TrueForge tests passed.
+- Seven required skills passed offline validation.
+- Agent and render-bridge validators returned `OFFLINE_VALID`.
+- Live registry readback showed five models, one agent, seven skills, and two
+  connectors.
+- A real native session showed the three-choice interaction, two subagents,
+  human approval, the render call, and a playable local result.
+- Accepted Run E audio measured -15.60 LUFS and -1.20 dBTP; music measured
+  8.31-8.54 dB above room voices across three representative segments.
 
-Clean install from `package.json`, `node_modules` and lockfile removed first:
+## Evidence boundaries
 
+- The code, tests, README, and demo video are merged on `main`. A Git merge and
+  push are repository state, not a hosted-product deployment.
+- The accepted demo used a reviewed localhost render bridge after TrueForge
+  sandbox Git initialization failed. Sandbox success is not claimed.
+- Native TrueForge approval was witnessed. The loopback bridge is a demo-grade
+  local component, not standalone production authorization against another
+  local process.
+- Subagent read-only behavior is prompt-enforced; per-subagent capability
+  isolation is not claimed.
+- Media ranking used a fixed candidate manifest. Raw-pixel inspection inside
+  the TrueForge subagent is not claimed.
+- `package_only` is not publication. No LinkedIn post, upload, or business
+  outcome was performed by the agent.
+
+## Reused dependencies
+
+These dependencies existed before the hackathon and are disclosed rather than
+presented as hackathon-original work:
+
+- DaoBrew video craft skill
+- HyperFrames runtime and CLI
+- media-use asset and provenance workflow
+
+## Submission form answers
+
+### Email
+
+```text
+zym1994815@gmail.com
 ```
-npm install         0 vulnerabilities
-npx tsc --noEmit    exit 0
-npx vitest run      10 files, 38 tests passed
+
+### Team name
+
+```text
+DaoBrew
 ```
 
-## Honest limits
+### Name of the person submitting
 
-- The in-repo pipeline's subagents run in-process; the TrueForge agent performs research
-  through the Bright Data MCP server. They are two surfaces over the same contracts, not
-  the same execution path.
-- HyperFrames rendering is still not implemented. Video is cut with ffmpeg inside the
-  agent's sandbox, driven by the `video-cut` skill.
-- Live Bright Data requires `BRIGHT_DATA_API_TOKEN`, `BRIGHTDATA_API_KEY`, or a stored
-  `brightdata login`. Missing
-  credentials produce fixture provenance; present credentials with a failed call produce
-  an error and never silently use fixtures.
-- TrueForge registration and trace commands require a configured model provider. They fail
-  closed with remediation when none exists.
-- HyperFrames rendering (P5) is not implemented.
-- `docs/status.html` claims derivation by a `status-provenance.mjs` that does not exist,
-  and its outputs disagree with `docs/status-derived.json`. Open — see Qodo finding 4 below.
+```text
+Yiming Zhang (Neo)
+```
 
-Nothing in this README describes a capability that has not been run. Where something is
-unbuilt, it is listed above.
+### Names and emails of teammates
 
-## Running as a TrueForge agent
+```text
+Murad - [ADD EMAIL]
+Annabel - [ADD EMAIL]
+```
 
-Configured and verified live on 2026-08-29 — see [docs/evidence](docs/evidence/):
+### Tracks
 
-| | |
-|---|---|
-| Model provider | `openai` → `gpt-5.6-sol` |
-| Agent | `postforge-director` |
-| MCP server | `brightdata` — authenticated, 5 tools discovered |
-| Tools enabled | `search_engine`, `scrape_as_markdown` — read-only |
-| Approval gating | `@write`, `@destructive` — enforced by TrueForge, not reimplemented here |
-| Skills | `hook-research`, `edit-plan`, `platform-copy`, `source-discipline` — Git-backed from [`skills/`](skills/) in this repo |
-| Sandbox | enabled (local fallback) — skills are materialized here |
-| Subagents | `dynamic_sub_agents` enabled |
+```text
+Best Use of TrueForge
+Best Code Quality
+Best UI
+Best Use of Bright Data
+```
 
-One recorded session produced **9 MCP tool responses** (5590 in / 1465 out tokens) and an
-edit plan citing four URLs returned by live search. Raw events:
-[`docs/evidence/trueforge-session-events.json`](docs/evidence/trueforge-session-events.json).
+Add `Best LinkedIn post` only after supplying the real public post link.
 
-## The agent renders its own video
+### GitHub link
 
-`npm run tf:render` stages footage into the session's sandbox and the agent produces the
-cut itself, following the `video-cut` skill.
+```text
+https://github.com/myz1912/hackathon
+```
 
-The sandbox is genuinely confined — it cannot read this repository or `/tmp`
-(`Operation not permitted`), so media is staged into the session's own sandbox directory,
-which TrueForge provisions lazily on first `exec`.
+### Deployed link
 
-Verified output, checked independently rather than taken from the agent's summary:
-**1080×1350 · 19.86s · h264 video + aac audio (48 kHz stereo) · yuv420p.**
+```text
+Leave blank. The verified product surface is localhost only.
+```
 
-Left behind in its own working directory: six normalised segments, a concat manifest,
-`final_ffprobe.txt`, and a **caption contact sheet it rendered to inspect its own
-captions**. Neither of the last two was requested in the prompt — the skill says *verify
-the delivered file, not the command* and *extract a frame and actually look at it*.
+### Video demo link
 
-Full trace and token breakdown: [`docs/evidence/agent-render.md`](docs/evidence/agent-render.md).
+```text
+https://github.com/myz1912/hackathon/blob/main/demo/daoharness-trueforge-demo.mp4
+```
 
-## Agentic skills
+### What does your project do?
 
-Four Git-backed `SKILL.md` packages in [`skills/`](skills/), registered in TrueForge and
-loaded progressively — the agent sees name and description, and pulls the body when the
-task calls for it.
+```text
+DaoHarness starts from a real business need and turns repeated, human-directed work into a bounded capability. This demo focuses on Event GTM: an event organizer describes the audience and desired outcome in natural language, then TrueForge coordinates research, media analysis, human choice, approval, and a deterministic video render.
 
-| Skill | What it governs |
-|---|---|
-| **hook-research** | Live research into what is *currently* working on a platform. Search and scrape only. Patterns must be testable instructions, each bound to a URL that actually states it. |
-| **edit-plan** | Patterns + probed media → segments with exact timecodes. Every segment carries a citation, and a cut that cannot be justified by a researched pattern is dropped. |
-| **platform-copy** | Caption, hashtags and on-screen text for one platform. Producing copy is explicitly not permission to post it. |
-| **source-discipline** | The honesty rules binding the others. *"A URL you did not receive from a tool does not exist."* |
-| **video-cut** | Turning an approved plan into an actual file: segment selection by `volumedetect` energy, `loudnorm` at −16 LUFS, caption compositing when `drawtext` is unavailable, and verifying the delivered artifact rather than the command's exit code. |
+The Post Director dynamically creates a Viral Trend Researcher and a Media Analyst. It combines source-linked public research with a fixed manifest of the organizer's owned footage, presents three business-outcome directions, and waits for the user to choose and approve one. After approval, a restricted HyperFrames bridge produces a local 30-second LinkedIn video with foreground contemporary jazz and lower room-voice ambience.
 
-Verified loading: asked to quote `source-discipline`, the agent pulled it from this repo
-and returned its rules verbatim — trace in
-[`docs/evidence/trueforge-session-skills.json`](docs/evidence/trueforge-session-skills.json).
+Event GTM is one DaoHarness capability, not the definition of the whole product. The pattern is real business need, human pull and correction, then a reusable capability with explicit boundaries.
+```
 
-## Setup note
+### What problem does your project solve, and who is it for?
 
-TrueForge binds **IPv6 localhost** in standalone mode. `http://127.0.0.1:8790` does not
-reach it; use `http://localhost:8790`. Verified 2026-08-29: `curl 127.0.0.1:8790` fails,
-`curl localhost:8790` returns `200`.
+```text
+Event organizers and community teams often have authentic footage but cannot turn it into timely go-to-market content. The strongest moments are scattered across files, public content patterns require research, and creative direction, editing, audio mixing, approval, and QA are normally separate manual workflows.
 
-## Team
+DaoHarness reduces that coordination burden while preserving human judgment. It is designed for event hosts, community builders, launch teams, and small marketing teams that need to extend an event's reach without replacing real footage with generic generated content.
+```
 
-- **Murad** — competition integrations: TrueForge, Bright Data, Qodo, qualification evidence
-- **Neo** — video: DaoBrew direction, source approval, HyperFrames output, visual acceptance
-- **Annabel** — multi-agent framework: agent boundaries, orchestration, contracts, failure handling
+### How did you use TrueForge?
 
-## Reused dependencies (disclosed)
+```text
+TrueForge is the execution harness for the working product. A root Post Director receives the natural-language business need, creates exactly two dynamic subagents, presents native outcome choices, synthesizes their results, and owns the human-approval boundary.
 
-`daobrew-video` (house style, source-fidelity rules, QA checklist) and HyperFrames existed
-before the hackathon and are not presented as hackathon-original work. AI coding assistance
-was used and is disclosed.
+The Viral Trend Researcher uses the Bright Data MCP connector for read-only public-web research. The Media Analyst ranks a fixed manifest of candidate moments from owned footage. The Post Director then presents three directions and stops for native approval before calling render_event_gtm through a restricted localhost MCP bridge.
 
-## Qodo Code Review Evidence
+The recorded demo shows the real TrueForge session trace, native choice, two subagents, approval receipt, MCP render call, and playable local video. The workflow remains package_only with external_action false.
+```
 
-Both pull requests were reviewed by Qodo's agentic review before merge.
+### How did you use Qodo?
 
-### [PR #2](https://github.com/myz1912/hackathon/pull/2) — three High security findings, all fixed
+```text
+We used Qodo as an external review gate on the security-sensitive core pull requests. Its first review found that the apparent approval gate did not cryptographically bind the exact edit plan and action, that media paths could escape the intended root, and that the Bright Data read-only policy was not enforced before process creation.
 
-Qodo reviewed [PR #1](https://github.com/myz1912/hackathon/pull/1) and returned four
-findings. The three High ones were security defects in the code and were fixed in PR #2.
+We addressed those findings in PR #2 by adding canonical SHA-256 plan/action digests, rechecking the approval immediately before rendering, adding realpath-based media-root confinement, and freezing a deny-by-default Bright Data tool allowlist before process spawn. We also expanded the test suite from 12 to 25 tests and added a tamper demo proving that a modified approved plan writes zero artifacts.
 
-**Finding 2 · High — "Approval does not bind render."** The sharpest one, and correct.
+Qodo's follow-up review on PR #2 identified two remaining medium issues: filesystem-root separator handling and a possible symlink validation-to-open race around ffprobe. Those findings are documented and are not represented as resolved in this submission. Review trail: https://github.com/myz1912/hackathon/pull/2
+```
 
-> "The workflow approves an edit plan but never binds that approval to an immutable plan
-> digest and exact render arguments, so the plan or source/timecode parameters can change
-> after approval while the render still appears authorized. This defeats the stated
-> fail-closed human write gate."
+### How did you use Bright Data?
 
-The gate printed exact argv but nothing tied the approval to the *plan*. A timecode could
-change between approval and render while the invocation still looked authorized — it
-appeared fail-closed and was not. *Fixed* with order-independent canonicalization plus
-SHA-256 digest binding, recomputed before every write, with `--tamper` added so the refusal
-is demonstrable rather than asserted.
+```text
+Bright Data is the read-only public research layer used by the dynamically created Viral Trend Researcher. In the live TrueForge run, it searched public LinkedIn and event-related pages for recent recap and aftermovie patterns relevant to event organizers and future attendees.
 
-**Finding 1 · High — "Media paths escape confinement."** The contract accepted arbitrary
-local paths with no allowed root, canonicalization, or symlink rule. *Fixed* in
-`src/safepath.ts`, including the sibling-prefix case a naive string compare misses.
+The agent preserved direct source URLs and separated observed patterns from creative hypotheses. Scraped content was treated as untrusted data, not instructions. No third-party video was downloaded or reused; Bright Data informed the strategy while final pixels came only from the user's owned event footage.
+```
 
-**Finding 3 · High — "Read-only connector is unenforced."** Read-only was policy prose
-rather than runtime enforcement. *Fixed* with a frozen tool-id allowlist that denies by
-default, before any spawn.
+### LinkedIn post links
 
-**Finding 4 · Medium — "Status derivation is unreproducible."** Not yet addressed; listed
-under Honest limits above.
+```text
+[ADD NEO LINKEDIN POST URL]
+[ADD MURAD LINKEDIN POST URL]
+[ADD ANNABEL LINKEDIN POST URL]
+```
 
-Test count went from 12 to 25 across the fixes. No existing test was weakened to make a new
-one pass.
+## AI assistant disclosure
+
+Codex was used for implementation, debugging, testing, and verification.
+TrueForge runs the submitted agent workflow. Human owners retain product,
+media, publication, and final acceptance authority.

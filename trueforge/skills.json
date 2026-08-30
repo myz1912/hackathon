@@ -1,0 +1,58 @@
+[
+  {
+    "type": "git",
+    "name": "daobrew-video",
+    "url": "https://github.com/DaoBrewAI/building-in-public",
+    "path": "daobrew-video/skills/daobrew-video",
+    "ref": "492756d6d204887f1da271c4cab4df5cbcc83717",
+    "description": "Apply DaoBrew's video editing house style to HyperFrames compositions, including script-sourced captions, readable overlays, soft PiP panels, and the DaoBrew outro."
+  },
+  {
+    "type": "git",
+    "name": "hyperframes",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "path": "skills/hyperframes",
+    "ref": "0fd70b1d2165d6ac9f4199bfafa9f22c711bfc8f",
+    "description": "Use as the mandatory entry point for creating, editing, inspecting, validating, previewing, or rendering any HyperFrames video or motion composition."
+  },
+  {
+    "type": "git",
+    "name": "hyperframes-core",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "path": "skills/hyperframes-core",
+    "ref": "0fd70b1d2165d6ac9f4199bfafa9f22c711bfc8f",
+    "description": "Use for the HyperFrames composition contract, timing attributes, clips, tracks, sub-compositions, framework-owned media, and deterministic rendering rules."
+  },
+  {
+    "type": "git",
+    "name": "hyperframes-cli",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "path": "skills/hyperframes-cli",
+    "ref": "0fd70b1d2165d6ac9f4199bfafa9f22c711bfc8f",
+    "description": "Use for the HyperFrames CLI development loop, validation, diagnostics, previews, renders, publishing, and supported cloud rendering workflows."
+  },
+  {
+    "type": "git",
+    "name": "general-video",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "path": "skills/general-video",
+    "ref": "0fd70b1d2165d6ac9f4199bfafa9f22c711bfc8f",
+    "description": "Use to author or edit a custom HyperFrames composition when no specialized workflow fits, including longer multi-scene pieces, reels, montages, and footage remixes."
+  },
+  {
+    "type": "git",
+    "name": "media-use",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "path": "skills/media-use",
+    "ref": "0fd70b1d2165d6ac9f4199bfafa9f22c711bfc8f",
+    "description": "Use Agent Media OS to resolve, generate, transform, freeze, ledger, and reuse BGM, SFX, images, icons, logos, voices, captions, color grades, and other HyperFrames media."
+  },
+  {
+    "type": "git",
+    "name": "hyperframes-audio",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "path": "skills/hyperframes-audio",
+    "ref": "0fd70b1d2165d6ac9f4199bfafa9f22c711bfc8f",
+    "description": "Use when audio already placed in a HyperFrames composition needs mixing, fades, ducking, effects, automation envelopes, or submix buses."
+  }
+]
