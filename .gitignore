@@ -8,3 +8,5 @@ renders/
 *.log
 BUILD_SPEC.md
 FIX_SPEC.md
+inputs/
+renders/*.mp4
