@@ -34,6 +34,8 @@ when it was registered.
 | MCP server | `brightdata` · authenticated · 5 tools discovered |
 | Tools enabled | `search_engine`, `scrape_as_markdown` — **read-only** |
 | Approval gating | `@write`, `@destructive` — native TrueForge, not reimplemented |
+| Skills | 4 Git-backed, loaded from this repo |
+| Sandbox / subagents | enabled |
 
 ## The 3-minute run
 
@@ -41,6 +43,11 @@ when it was registered.
 Show the agent config: the model, the `brightdata` MCP server, and that only two read-only
 tools are enabled. **Say the line:** *"the approval gate is the harness's, not ours — we
 declared which tools need it, TrueForge enforces it."*
+
+### 1b · Show the skills (15s)
+In the agent config, show the four skills pulled from GitHub. **Say the line:** *"these are
+Git-backed — TrueForge fetches them from our public repo and the agent loads a skill's body
+only when the task needs it."*
 
 ### 2 · Paste the brief (10s)
 

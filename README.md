@@ -113,10 +113,30 @@ Configured and verified live on 2026-08-29 — see [docs/evidence](docs/evidence
 | MCP server | `brightdata` — authenticated, 5 tools discovered |
 | Tools enabled | `search_engine`, `scrape_as_markdown` — read-only |
 | Approval gating | `@write`, `@destructive` — enforced by TrueForge, not reimplemented here |
+| Skills | `hook-research`, `edit-plan`, `platform-copy`, `source-discipline` — Git-backed from [`skills/`](skills/) in this repo |
+| Sandbox | enabled (local fallback) — skills are materialized here |
+| Subagents | `dynamic_sub_agents` enabled |
 
 One recorded session produced **9 MCP tool responses** (5590 in / 1465 out tokens) and an
 edit plan citing four URLs returned by live search. Raw events:
 [`docs/evidence/trueforge-session-events.json`](docs/evidence/trueforge-session-events.json).
+
+## Agentic skills
+
+Four Git-backed `SKILL.md` packages in [`skills/`](skills/), registered in TrueForge and
+loaded progressively — the agent sees name and description, and pulls the body when the
+task calls for it.
+
+| Skill | What it governs |
+|---|---|
+| **hook-research** | Live research into what is *currently* working on a platform. Search and scrape only. Patterns must be testable instructions, each bound to a URL that actually states it. |
+| **edit-plan** | Patterns + probed media → segments with exact timecodes. Every segment carries a citation, and a cut that cannot be justified by a researched pattern is dropped. |
+| **platform-copy** | Caption, hashtags and on-screen text for one platform. Producing copy is explicitly not permission to post it. |
+| **source-discipline** | The honesty rules binding the others. *"A URL you did not receive from a tool does not exist."* |
+
+Verified loading: asked to quote `source-discipline`, the agent pulled it from this repo
+and returned its rules verbatim — trace in
+[`docs/evidence/trueforge-session-skills.json`](docs/evidence/trueforge-session-skills.json).
 
 ## Setup note
 
