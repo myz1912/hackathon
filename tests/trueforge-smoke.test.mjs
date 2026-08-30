@@ -110,6 +110,11 @@ function validManifest() {
         "MUSIC_MIX=style-selected-dynamic-ducking-under-real-voice",
         "SARCASTIC_REACTION_DIRECTION=creative-unvalidated-virality-hypothesis|shots=awkward-real-reactions+brief-punch-ins+hard-cuts|copy=deadpan-hooks|music=confident-music-contrast",
         "SARCASTIC_REACTION_PERFORMANCE_CLAIM=prohibited",
+        "SIMPLE_NEED=Make this event reach more people",
+        "OUTCOME_QUESTION=Which business outcome should this Event GTM capability optimize for?",
+        "OUTCOME_1=Grow the next event's reach (Recommended)",
+        "OUTCOME_2=Prove sponsor value",
+        "OUTCOME_3=Build a repeatable Event GTM asset",
       ].join("\n"),
       mcp_servers: [
         {
@@ -118,6 +123,14 @@ function validManifest() {
           disable_tools: [],
           preload_tools: [],
           require_approval_for_tools: ["@write", "@destructive"],
+          preload: false,
+        },
+        {
+          name: "daoharness-render-bridge",
+          enable_tools: ["inspect_event_media", "render_event_gtm"],
+          disable_tools: [],
+          preload_tools: ["inspect_event_media", "render_event_gtm"],
+          require_approval_for_tools: ["render_event_gtm"],
           preload: false,
         },
       ],
@@ -203,32 +216,6 @@ function validManifest() {
               "summary",
               "sources",
               "directions",
-            ],
-            allOf: [
-              {
-                if: {
-                  properties: { status: { const: "pending_approval" } },
-                  required: ["status"],
-                },
-                then: {
-                  properties: {
-                    approval_valid: { const: false },
-                    approval_receipt: { type: "null" },
-                  },
-                },
-              },
-              {
-                if: {
-                  properties: { status: { const: "approved_package" } },
-                  required: ["status"],
-                },
-                then: {
-                  properties: {
-                    approval_valid: { const: true },
-                    approval_receipt: { type: "object" },
-                  },
-                },
-              },
             ],
             additionalProperties: false,
           },
@@ -392,7 +379,7 @@ test("requires a strict native output schema with a complete digest-bound approv
         );
     },
     (copy) => {
-      delete copy.manifest.response_format.json_schema.schema.allOf;
+      copy.manifest.response_format.json_schema.schema.allOf = [];
     },
     (copy) => {
       copy.manifest.response_format.json_schema.schema.properties.render_url = {
@@ -519,8 +506,13 @@ test("live preflight reads the skill registry and reports a missing required ski
     requests.push(`${request.method} ${request.url}`);
     const responses = {
       "/api/v1/models": { data: [{ name: "openai/gpt-test" }] },
-      "/api/v1/mcp-servers": { data: [{ name: "bright-data" }] },
+      "/api/v1/mcp-servers": {
+        data: [{ name: "bright-data" }, { name: "daoharness-render-bridge" }],
+      },
       "/api/v1/mcp-servers/bright-data/tools": { data: [{ name: "search_engine" }] },
+      "/api/v1/mcp-servers/daoharness-render-bridge/tools": {
+        data: [{ name: "inspect_event_media" }, { name: "render_event_gtm" }],
+      },
       "/api/v1/skills": {
         data: REQUIRED_SKILLS.slice(1).map((name) => ({
           name,

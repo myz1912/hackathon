@@ -73,32 +73,6 @@ const OUTPUT_FIELDS = [
   "sources",
   "directions",
 ];
-const APPROVAL_SCHEMA_CONDITIONALS = [
-  {
-    if: {
-      properties: { status: { const: "pending_approval" } },
-      required: ["status"],
-    },
-    then: {
-      properties: {
-        approval_valid: { const: false },
-        approval_receipt: { type: "null" },
-      },
-    },
-  },
-  {
-    if: {
-      properties: { status: { const: "approved_package" } },
-      required: ["status"],
-    },
-    then: {
-      properties: {
-        approval_valid: { const: true },
-        approval_receipt: { type: "object" },
-      },
-    },
-  },
-];
 const REQUIRED_INSTRUCTION_CONTRACTS = [
   ["DIRECTION_COUNT=3", "DIRECTION_COUNT"],
   [
@@ -124,6 +98,14 @@ const REQUIRED_INSTRUCTION_CONTRACTS = [
     "SARCASTIC_REACTION_DIRECTION",
   ],
   ["SARCASTIC_REACTION_PERFORMANCE_CLAIM=prohibited", "SARCASTIC_REACTION_PERFORMANCE_CLAIM"],
+  ["SIMPLE_NEED=Make this event reach more people", "SIMPLE_NEED"],
+  [
+    "OUTCOME_QUESTION=Which business outcome should this Event GTM capability optimize for?",
+    "OUTCOME_QUESTION",
+  ],
+  ["OUTCOME_1=Grow the next event's reach (Recommended)", "OUTCOME_1"],
+  ["OUTCOME_2=Prove sponsor value", "OUTCOME_2"],
+  ["OUTCOME_3=Build a repeatable Event GTM asset", "OUTCOME_3"],
 ];
 const API_TIMEOUT_MS = 10_000;
 const TURN_TIMEOUT_MS = 120_000;
@@ -252,8 +234,8 @@ export function validateManifest(document) {
   );
 
   invariant(
-    Array.isArray(manifest.mcp_servers) && manifest.mcp_servers.length === 1,
-    "exactly one MCP connector must be attached",
+    Array.isArray(manifest.mcp_servers) && manifest.mcp_servers.length === 2,
+    "exactly two scoped MCP connectors must be attached",
   );
   const connector = manifest.mcp_servers[0];
   invariant(connector.name === "bright-data", "connector must be bright-data");
@@ -268,6 +250,25 @@ export function validateManifest(document) {
   invariant(sameArray(connector.disable_tools, []), "disable_tools must be explicit and empty");
   invariant(sameArray(connector.preload_tools, []), "preload_tools must be explicit and empty");
   invariant(connector.preload === false, "Bright Data tools must stay deferred");
+  const renderConnector = manifest.mcp_servers[1];
+  invariant(
+    renderConnector.name === "daoharness-render-bridge",
+    "second connector must be daoharness-render-bridge",
+  );
+  invariant(
+    sameArray(renderConnector.enable_tools, ["inspect_event_media", "render_event_gtm"]),
+    "render connector must expose only inspect_event_media and render_event_gtm",
+  );
+  invariant(sameArray(renderConnector.disable_tools, []), "render connector disable_tools must be empty");
+  invariant(
+    sameArray(renderConnector.preload_tools, ["inspect_event_media", "render_event_gtm"]),
+    "render connector tools must be preloaded by exact name",
+  );
+  invariant(
+    sameArray(renderConnector.require_approval_for_tools, ["render_event_gtm"]),
+    "render_event_gtm must require native tool approval",
+  );
+  invariant(renderConnector.preload === false, "render connector must stay scoped and deferred");
 
   invariant(
     Array.isArray(manifest.skills) && manifest.skills.length === REQUIRED_SKILLS.length,
@@ -306,9 +307,8 @@ export function validateManifest(document) {
     `output schema properties must be exactly ${OUTPUT_FIELDS.join(", ")}`,
   );
   invariant(
-    JSON.stringify(sortDeep(outputSchema.allOf)) ===
-      JSON.stringify(sortDeep(APPROVAL_SCHEMA_CONDITIONALS)),
-    "output schema must conditionally bind status, approval_valid, and approval_receipt",
+    !Object.hasOwn(outputSchema, "allOf"),
+    "output schema must avoid provider-incompatible allOf; runtime validation enforces status binding",
   );
   invariant(
     outputSchema.properties?.status?.type === "string" &&
@@ -908,21 +908,24 @@ function fetchBounded(url, options = {}, timeoutMs = API_TIMEOUT_MS) {
 }
 
 async function getRuntimeState(baseUrl) {
-  const [modelsResponse, serversResponse, toolsResponse, skillsResponse] = await Promise.all([
+  const [modelsResponse, serversResponse, toolsResponse, renderToolsResponse, skillsResponse] = await Promise.all([
     fetchBounded(`${baseUrl}/api/v1/models`),
     fetchBounded(`${baseUrl}/api/v1/mcp-servers`),
     fetchBounded(`${baseUrl}/api/v1/mcp-servers/bright-data/tools`),
+    fetchBounded(`${baseUrl}/api/v1/mcp-servers/daoharness-render-bridge/tools`),
     fetchBounded(`${baseUrl}/api/v1/skills`),
   ]);
-  const [modelsBody, serversBody, toolsBody, skillsBody] = await Promise.all([
+  const [modelsBody, serversBody, toolsBody, renderToolsBody, skillsBody] = await Promise.all([
     readJson(modelsResponse, "model registry read"),
     readJson(serversResponse, "MCP registry read"),
     readJson(toolsResponse, "Bright Data tool catalog read"),
+    readJson(renderToolsResponse, "render bridge tool catalog read"),
     readJson(skillsResponse, "skill registry read"),
   ]);
   const models = Array.isArray(modelsBody.data) ? modelsBody.data : [];
   const servers = Array.isArray(serversBody.data) ? serversBody.data : [];
   const tools = Array.isArray(toolsBody.data) ? toolsBody.data : [];
+  const renderTools = Array.isArray(renderToolsBody.data) ? renderToolsBody.data : [];
   const skills = skillsBody.data;
   if (!servers.some((server) => server.name === "bright-data")) {
     throw new LiveBlocker(
@@ -938,11 +941,31 @@ async function getRuntimeState(baseUrl) {
       { connectorCount: servers.length, toolCount: 0 },
     );
   }
+  if (!servers.some((server) => server.name === "daoharness-render-bridge")) {
+    throw new LiveBlocker(
+      "render_bridge_connector_missing",
+      "the daoharness-render-bridge MCP connector is not registered",
+      { connectorCount: servers.length },
+    );
+  }
+  const renderToolNames = renderTools.map((tool) => tool?.name);
+  if (
+    renderToolNames.length !== 2 ||
+    !renderToolNames.includes("inspect_event_media") ||
+    !renderToolNames.includes("render_event_gtm")
+  ) {
+    throw new LiveBlocker(
+      "render_bridge_tools_mismatched",
+      "the render bridge must expose exactly inspect_event_media and render_event_gtm",
+      { connectorCount: servers.length, renderToolCount: renderTools.length },
+    );
+  }
   return {
     models,
     skills,
     connectorCount: servers.length,
     brightDataToolCount: tools.length,
+    renderToolCount: renderTools.length,
     brightDataReadOnlyToolNames: tools
       .filter(
         (tool) =>

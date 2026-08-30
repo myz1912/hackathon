@@ -1,0 +1,6 @@
+{
+  "type": "remote",
+  "name": "daoharness-render-bridge",
+  "url": "http://127.0.0.1:8791/mcp",
+  "description": "Approval-gated local DaoHarness Event GTM rendering from six fixed user-owned MOV inputs."
+}
