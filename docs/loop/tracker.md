@@ -8,21 +8,21 @@
 - `[!]` blocked
 - `READY` predecessors satisfied; `GATED` predecessor evidence missing
 
-## One-Hour DAG
+## Active DAG
 
 Codex task `01a0505f-6100-7681-9331-e8456b0126d9` is the unique
 Supervisor/controller. All other tasks finish only their already-started bounded
 handoff or lane and must not create, direct, replace, or interrupt children.
 
 ```text
-TRUEFORGE_CONTRACT_HARDEN [ACTIVE; REVIEW PENDING] --------\
-TRUEFORGE_NATIVE_UI_AUDIT [COMPLETE; NATIVE APPROX ONLY] ---+--> LIVE_UI [GATED]
-/api/v1/models non-empty [BLOCKED; count=0] ----------------/
+POSTFORGE_CUSTOM_UI [DISPOSED; RECOVERABLE TRASH]
 
-LIVE_UI -> live audience-style/design evidence -> TRANSFER_AUDIT
+VIDEO_REFINE_TWO_CUTS [READY; EXISTING PROJECTS]
 
-Prior VIDEO_RENDER/RECORD_REPLAY/QODO work is downstream or separately owned;
-none is part of the current ready set.
+TRUEFORGE_CONTRACT_HARDEN [STOPPING / HANDOFF] -> TRUEFORGE_VERTICAL_SLICE [READY AFTER HANDOFF]
+                                               + model configured [USER GATE]
+
+TRUEFORGE_VERTICAL_SLICE -> native buttons -> approval -> restricted render -> playable/downloadable video
 ```
 
 Only Post Director, Viral Trend Researcher, and Media Analyst are runtime agents.
@@ -31,6 +31,15 @@ are root steps. Record/Replay, transfer audit, and Qodo are delivery acceptance,
 not runtime agents.
 
 ## Checkpoints
+
+- [x] `POSTFORGE_CUSTOM_UI_DISPOSAL`: moved `demo/post-director` and the
+  PostForge UI capture assets to macOS Trash. Do not restore or rebuild them.
+- [ ] `VIDEO_REFINE_TWO_CUTS`: refine the two existing HyperFrames projects in
+  place; remove all TrueForge/PostForge content; replace trap/phonk with upbeat
+  contemporary jazz; preserve rejected finals as comparison artifacts.
+- [ ] `TRUEFORGE_VERTICAL_SLICE`: use native TrueForge UI only. Sync skills,
+  register DaoHarness, present large native outcome buttons, bind approval, call
+  a restricted HyperFrames render bridge, then play/download the local result.
 
 - [~] `EVENT_RESEARCH`: facts were obtained read-only; persist official sources,
   corrected goal/audience, and approved event asset ledger. Durable receipt is
@@ -84,15 +93,9 @@ not runtime agents.
 
 ## Current Split-Run Budget
 
-Contract hardening remains the only active bounded checkpoint and stops after
-its owned commit and evidence. UI audit completed with a read-only matrix. The
-Supervisor performs only reconciliation/monitoring. No lane may spend the model
-credential gate or create `LIVE_UI` itself.
-
-The recorded one-hour budget expired at `2026-08-29 18:04 PDT`. Start no new
-lane or successor. Already-started bounded contract/video work may only finish
-its current acceptance/review cycle and return evidence; any additional phase
-requires a fresh user-authorized budget.
+Neo explicitly reauthorized execution at `2026-08-29 19:40 PDT`. No new wall-
+clock limit was stated. The new work is exactly the two ready lanes above; no
+submission, publication, or unrelated hardening is authorized.
 
 ## Auto-Chain Rules
 
@@ -116,12 +119,10 @@ with FAST off. Apply the full provisional-ID health checklist in `handoff.md`.
 
 ## Current Next Action
 
-Unique Supervisor `01a0505f-6100-7681-9331-e8456b0126d9` owns all subsequent
-monitoring and reconciliation. Monitor the contract lane through independent
-review rework and its scoped commit. Start no new lane because the recorded
-budget has expired. `LIVE_UI` remains gated until that lane passes, a fresh live
-readback shows `/api/v1/models` non-empty, and the user authorizes the next
-execution budget.
+Unique Supervisor `01a0505f-6100-7681-9331-e8456b0126d9` creates and monitors
+exactly two new sessions: video refinement immediately, and TrueForge vertical
+slice after the current contract writer returns its handoff. The model registry
+remains a user credential gate; every other non-secret step may proceed.
 
 ## Evidence Log
 
@@ -155,4 +156,4 @@ execution budget.
 | Live proof boundary | no live audience-style run, selectable-direction UI, approval styling, or host-chrome customization has been accepted |
 | Working tree | TrueForge integration files are uncommitted and owned by the single-writer hardening lane; source MOVs, `demo/**`, and `docs/plans/**` remain outside that lane |
 | `T0` | `2026-08-29 17:04 PDT` |
-| Budget gate | one-hour budget expired at `2026-08-29 18:04 PDT`; no new lane/successor may start without fresh user authorization |
+| Fresh authorization | Neo said `go` at `2026-08-29 19:40 PDT`; two scoped lanes authorized, no new wall-clock limit stated |

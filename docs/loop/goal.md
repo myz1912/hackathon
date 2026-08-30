@@ -2,10 +2,15 @@
 
 ## Objective
 
-Build DaoHarness on top of the TrueForge harness for the event hoster. The
-business outcome is to turn accumulated raw event footage into a usable,
-source-linked, approval-gated 30-second English LinkedIn GTM video and copy-ready
-package. Rendering is HyperFrames-only and no LinkedIn action occurs.
+Deliver two distinct 30-second English LinkedIn videos from the same owned event
+footage, plus one native TrueForge vertical slice that can turn a simple event-
+promotion business need into a selectable, approved, locally rendered video.
+Rendering is HyperFrames-only and no LinkedIn action occurs.
+
+The two videos have different jobs: the event-hoster cut sells the event; the
+DaoHarness product cut shows that Event GTM is one bounded capability shaped by
+a real business need. TrueForge is implementation infrastructure only and must
+never appear in either video's pixels, copy, narration, UI capture, or end card.
 
 Control authority: Codex task `01a0505f-6100-7681-9331-e8456b0126d9` is the
 unique Supervisor. Other tasks may finish an already-started bounded handoff but
@@ -20,7 +25,7 @@ that skill separately against TrueForge-native manifest/tool/run evidence. A
 | Field | Value | Truth state |
 | --- | --- | --- |
 | customer | Event hoster | confirmed |
-| product | DaoHarness on top of the TrueForge harness | confirmed |
+| product | DaoHarness; Event GTM is one bounded capability | confirmed |
 | business outcome | Turn accumulated raw event footage into usable, source-linked, approval-gated LinkedIn GTM video/package | confirmed |
 | event | `https://luma.com/agent-harness?tk=vhwtdV` | confirmed entry URL; durable readback pending |
 | platform | LinkedIn | confirmed |
@@ -30,12 +35,13 @@ that skill separately against TrueForge-native manifest/tool/run evidence. A
 | renderer | HyperFrames-only | confirmed |
 | native UI design authority | `/Users/yz/DaoBrewStrategy/explorations/2026-08-18-neobrutal-design-system/report.html` (`Taoist Neo-Brutalism`) | confirmed; apply only through TrueForge-native component controls |
 | output | `package_only`, `external_action: false` | immutable |
-| demo message | `TrueForge is the harness. DaoHarness ships the real business need.` | confirmed |
-| value line | `DaoHarness turns what your business already has into what it needs to ship.` | confirmed for V1 |
+| event-hoster cut | Sell the event through people, voices, energy, and connected best moments | confirmed |
+| product cut | Real business need -> one meaningful human choice -> best moments -> capability output | confirmed |
+| capability stamp | `EVENT GTM / A DAOHARNESS CAPABILITY / BUILT AROUND A REAL BUSINESS NEED` | confirmed |
 | audience | Event hosters and teams with accumulated raw footage that is not yet usable GTM content | derived from confirmed customer/outcome |
 | media | Six confirmed user-original MOV files in `handoff.md` | intake/analysis pending |
 | primary hook | `You already have the content. It just hasn’t become GTM yet.` | user-selected for V1; not viral-validated |
-| BGM | `New Bass 01` by Lily J | provisional; VIDEO_RENDER must freeze/ledger with `media-use` |
+| BGM | Upbeat contemporary jazz; no trap/phonk/Trapanomics | confirmed direction; VIDEO_REFINE must freeze/ledger with `media-use` |
 | V1 authorization | User said `剪吧，用Record and Replay弄下来` | approved to start VIDEO_RENDER V1; no external-action approval |
 
 ## Exactly Three Runtime Agents
@@ -53,6 +59,19 @@ deterministic tool; technical QA and package writing are root-owned deterministi
 steps, not agents.
 
 ## Done When
+
+- The existing Product Demo V2 and Event-Hoster GTM projects are refined in
+  place without overwriting the rejected finals. Both use the confirmed Taoist
+  Neo-Brutalism / SF Mono system, large feed-readable text, upbeat contemporary
+  jazz, and zero TrueForge/PostForge content.
+- The event-hoster cut makes the event itself desirable and uses real room voice
+  plus connected best moments as the proof; it does not explain the workflow.
+- The product cut uses the event as one example of `real business need -> human
+  choice -> capability`, never defines DaoHarness as a video-only or universal
+  product, and ends with the bounded Event GTM capability stamp.
+- The native TrueForge host exposes the DaoHarness flow without a custom
+  PostForge UI: simple need, three outcome choices, approval, restricted
+  HyperFrames render bridge, playable/downloadable local result.
 
 - Durable `EVENT_RESEARCH` records official facts and
   source-approved event brand assets. Facts obtained only in chat are not a
@@ -105,6 +124,8 @@ steps, not agents.
 - No automatic legacy DaoBrew Video/DoubleVideo outro or caption package in a
   customer cut. This does not prohibit the canonical Taoist Neo-Brutalism
   product design language.
+- No TrueForge or PostForge name, logo, UI, screenshot, narration, or end card in
+  either video. No restoration or replacement of the deleted custom PostForge UI.
 
 ## Read First
 

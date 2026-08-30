@@ -19,12 +19,11 @@
 
 ## Frozen Product Boundary
 
-- Customer: event hoster. Product: DaoHarness on top of the TrueForge harness.
+- Customer: event hoster. Product: DaoHarness. TrueForge is implementation
+  infrastructure and never appears in either video.
 - Business outcome: turn accumulated raw event footage into a usable,
   source-linked, approval-gated LinkedIn GTM video/package.
 - Platform: LinkedIn. Output: 30 seconds, English.
-- Demo message: `TrueForge is the harness. DaoHarness ships the real business
-  need.`
 - Value line: `DaoHarness turns what your business already has into what it needs
   to ship.`
 - V1 hook: `You already have the content. It just hasn’t become GTM yet.` It is
@@ -41,6 +40,41 @@
 - All edit techniques are allowed while source constraints remain true.
 - `publishing_mode: package_only`; `external_action: false`; no LinkedIn draft,
   queue, upload, scheduling, post, send, or connector write.
+
+## Two Video Deliverables
+
+- Refine, do not recreate from scratch:
+  `renders/daoharness-product-demo-v2/` and `renders/event-hoster-gtm-v1/`.
+  Preserve the rejected finals and write new filenames.
+- Event-hoster cut sells the event. Use people, room voice, energy, and best
+  moments connected into a strong story. Do not explain workflow or capability
+  mechanics.
+- Product cut sells DaoHarness. The event is proof of one bounded capability:
+  real business need -> one meaningful human choice -> best moments -> output.
+- Neither video may contain TrueForge/PostForge text, logo, UI, screenshot,
+  narration, metadata shown on screen, or end card.
+- Use the canonical Taoist Neo-Brutalism design system with explicitly bundled
+  SF Mono/ui-monospace typography. No Plus Jakarta, League Gothic, accidental
+  fallback, or tiny full-UI screenshots. Important text must remain feed-readable.
+- Replace Trapanomics/trap/phonk with licensed upbeat contemporary jazz. Preserve
+  real event voices and room ambience; dynamically duck the bed under speech.
+- The product end stamp is exactly `EVENT GTM / A DAOHARNESS CAPABILITY / BUILT
+  AROUND A REAL BUSINESS NEED`. The event-hoster cut has no product explanation.
+
+## Native TrueForge Vertical Slice
+
+- Use the existing TrueForge 0.1.4 host and its native OpenUI / question /
+  approval surfaces. Do not create or restore a custom PostForge UI.
+- Minimal flow: simple event-promotion need -> three large business-outcome
+  buttons -> one human choice -> best moments/directions -> approval -> restricted
+  HyperFrames render bridge -> playable/downloadable local video.
+- Sync/read back the seven pinned skills and register the DaoHarness agent. A
+  local `skills.json` or manifest file is not live registry evidence.
+- Remove the current planning-only `No render tool is attached` boundary by
+  attaching one fixed-schema, allowlisted-path render bridge. Never expose
+  arbitrary shell or write outside the owned render/output paths.
+- A configured model is the only credential gate. Never request or print its
+  secret in chat; Neo configures it in the TrueForge UI.
 
 ## Audience Direction and Native UI Contract
 
@@ -136,9 +170,9 @@
 - Daytime child: explicit `gpt-5.6-sol`, `high`, `priority`/FAST. Never
   `ultra`, `max`, `xhigh`, or inherited effort. Night child: `high`, standard
   tier, FAST off.
-- Budget is 60 wall-clock minutes from recorded `T0`; at `T+60` stop new work.
-  At most one replacement per failed thread health check and one bounded tool
-  retry.
+- Neo reauthorized exactly two new execution lanes at `2026-08-29 19:40 PDT`:
+  video refinement and the native TrueForge vertical slice. No new wall-clock
+  limit was stated. At most one replacement per failed thread health check.
 - This control checkpoint may commit exactly the four `docs/loop/*.md` files and
   must not push. Future children stage only explicitly owned non-media paths;
   never bulk-add/reset/discard concurrent work.

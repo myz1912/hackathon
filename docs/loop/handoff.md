@@ -5,6 +5,16 @@
 - Unique Supervisor authority is Codex task
   `01a0505f-6100-7681-9331-e8456b0126d9`. This reconciliation task relinquishes
   control after committing the four loop documents and issuing its final handoff.
+- Neo reauthorized two lanes at `2026-08-29 19:40 PDT`: refine the two existing
+  videos and build the minimal native TrueForge vertical slice.
+- TrueForge/PostForge is forbidden in both videos. The custom PostForge Studio
+  at `demo/post-director` and its UI capture assets were moved to macOS Trash at
+  `2026-08-29 19:40 PDT`; the operation is recoverable but the assets must not be
+  restored or used by either lane.
+- Existing local technical artifacts are
+  `renders/daoharness-product-demo-v2/daoharness-product-demo-v2-final.mp4` and
+  `renders/event-hoster-gtm-v1/event-hoster-gtm-v1-final.mp4`. Both passed decode
+  and audio checks but failed Neo's creative acceptance and require refinement.
 - Repo/branch/head at reconciliation: `/Users/yz/hackathon` /
   `codex/trueforge-content-agent` / `8b7c18f`.
 - Neo stopped the monolithic implementation path. The current authority is the
@@ -55,17 +65,15 @@ event_brand: source_approved_official_assets_only
 cta: turn_your_event_footage_into_gtm
 publishing_mode: package_only
 external_action: false
-demo_message: "TrueForge is the harness. DaoHarness ships the real business need."
 value_line: "DaoHarness turns what your business already has into what it needs to ship."
 audience: event_hosters_and_teams_with_accumulated_raw_footage
 hook:
   v1_selection: "You already have the content. It just hasn’t become GTM yet."
   status: user_selected_for_v1_not_viral_validated
 bgm:
-  selection: "New Bass 01 by Lily J"
-  source: https://assets.mixkit.co/music/720/720.mp3
-  license: https://mixkit.co/license/#musicFree
-  status: provisional_not_downloaded_not_frozen_not_ledgered
+  selection: upbeat_contemporary_jazz
+  rejected: trapanomics_trap_phonk
+  status: must_resolve_freeze_and_ledger_in_video_lane
 video_render_v1:
   status: user_approved_to_start
   project: /Users/yz/hackathon/video/daoharness-linkedin-v1
@@ -148,6 +156,16 @@ Verified TrueForge facts and current boundary:
 
 ## Ready Set and Blockers
 
+New ready set:
+
+- `VIDEO_REFINE_TWO_CUTS`: ready now; owns only the two existing render project
+  directories and their new outputs.
+- `TRUEFORGE_VERTICAL_SLICE`: create only after the current contract-hardening
+  writer returns a final handoff; owns the TrueForge manifest/sync/smoke/render-
+  bridge paths. Live completion is blocked until Neo configures a model in the
+  TrueForge UI.
+- `POSTFORGE_CUSTOM_UI`: disposed. Never restore or rebuild it.
+
 The read-only `TRUEFORGE_NATIVE_UI_AUDIT` lane is complete. The only active split
 lane is `TRUEFORGE_CONTRACT_HARDEN`; it retains exclusive write authority over
 its owned TrueForge files.
@@ -190,6 +208,43 @@ Current blockers/unverified state:
   ledgered. Only VIDEO_RENDER may do that through `media-use`.
 
 ## Exact Next Prompts
+
+### VIDEO_REFINE_TWO_CUTS
+
+```text
+Refine the existing Product Demo V2 and Event-Hoster GTM V1 projects in place.
+Preserve rejected finals under their existing names and write new output names.
+Remove every TrueForge/PostForge word, logo, UI capture, image, narration, and
+end-card reference from both videos. Use Taoist Neo-Brutalism with explicitly
+bundled SF Mono/ui-monospace and large feed-readable type. Replace all trap/phonk
+and Trapanomics with licensed upbeat contemporary jazz, frozen and ledgered via
+media-use; duck dynamically under real room voice.
+
+Event-hoster cut: sell the event itself through people, voices, energy, and
+connected best moments. 9-16s must visibly find different best moments and string
+them into one story. Do not explain workflow at the end; the cut is the proof.
+
+Product cut: never mention TrueForge. Show one bounded product story: real event-
+promotion need -> one meaningful human business choice -> best moments -> output.
+End only with EVENT GTM / A DAOHARNESS CAPABILITY / BUILT AROUND A REAL BUSINESS
+NEED. This demonstrates one capability without defining DaoHarness as video-only
+or universal. Run HyperFrames checks, inspect snapshots/contact sheets and audio,
+then open the final previews for Neo before high-quality final render.
+```
+
+### TRUEFORGE_VERTICAL_SLICE
+
+```text
+Build the smallest native TrueForge vertical slice; do not create custom UI and
+never restore demo/post-director. Preserve current contract work but stop further
+generic hardening. With TDD, sync/read back 7/7 skills, register the DaoHarness
+agent, use native OpenUI/questions for three large business-outcome choices and
+native approval, attach a fixed-schema allowlisted HyperFrames render bridge,
+and return a locally playable/downloadable video. The user need is simple event
+promotion; TrueForge is internal infrastructure and never appears in generated
+video content. If /api/v1/models remains empty, finish non-secret code/tests and
+stop at the exact UI credential gate without reading or printing any secret.
+```
 
 The two lanes below already exist and passed the available health checks. Only
 the unique Supervisor may monitor or reconcile them. This handoff task must not
