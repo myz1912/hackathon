@@ -1,4 +1,4 @@
-# Loop Tracker: LinkedIn GTM Agent
+# Loop Tracker: DaoHarness LinkedIn GTM
 
 ## Legend
 
@@ -51,9 +51,12 @@ not runtime agents.
   Keep every original untracked/ignored and unchanged.
 - [ ] `VIRAL_RESEARCH`: after event receipt and agent registration, run Viral
   Trend Researcher and accept source-linked LinkedIn evidence. Validate or
-  reject the brainstormed hook direction; do not treat it as viral evidence.
+  reject the primary hook hypothesis and product CTA; do not treat either as
+  viral evidence before this checkpoint.
 - [ ] `VIDEO_RENDER`: after both research receipts, Media Analyst, live root
-  synthesis, and human approval, run HyperFrames -> QA -> package-only output.
+  synthesis, final user hook selection, and human approval, run HyperFrames ->
+  QA -> package-only output. The child—not root—must use `media-use` to freeze
+  and ledger the provisional BGM before composition use.
 - [ ] `RECORD_REPLAY_SKILL`: user records the runnable flow; package and replay
   the Codex skill with a receipt.
 - [ ] `TRANSFER_AUDIT`: verify Codex replay and TrueForge-native manifest/tool/run
@@ -121,7 +124,13 @@ non-empty and create succeeds.
 | Loop bootstrap | `loop_doctor.py` returned `ok: true`; four local uncommitted loop files; no implementation/threads/commit |
 | Event facts | obtained read-only; durable receipt not accepted; `[~]` |
 | Viral patterns | not run; no accepted evidence |
-| Hook | brainstorm only; recommended direction is Authentic FOMO spoken hook + category/product middle; not viral-validated; final hook pending user selection |
+| Product positioning | customer=event hoster; product=DaoHarness on top of TrueForge harness; outcome=raw event footage to usable/source-linked/approval-gated LinkedIn GTM video/package |
+| Authority alignment | aligned across all four loop docs: 30s, product CTA, exact demo/value lines, hook hypothesis status, and provisional BGM gate; no conflicting old CTA/goal remains |
+| Demo message | `TrueForge is the harness. DaoHarness ships the real business need.` |
+| Value line | `DaoHarness turns raw event footage into usable GTM video—on top of TrueForge.` |
+| Hook | primary hypothesis is `Your event already has the content. It’s just trapped in the camera roll.`; not viral-validated; final hook pending user selection |
+| CTA | product/business CTA: turn your event footage into GTM; event-attendance CTA is not primary |
+| BGM | provisional `New Bass 01` by Lily J; remote source/license recorded in handoff; not frozen or accepted until VIDEO_RENDER runs `media-use` and writes ledger |
 | Media | read-only findings obtained for all six originals, including `IMG_4200.mov`; durable manifest not accepted; `[~]` |
 | TrueForge runtime | v0.1.4; Bright Data connector authenticated with 74 tools; no connector code required |
 | Agent production set | planned minimum is `trueforge/post-director.agent.json` + `scripts/trueforge-smoke.mjs`; both absent at this checkpoint |

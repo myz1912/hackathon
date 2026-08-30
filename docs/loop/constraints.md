@@ -1,4 +1,4 @@
-# Constraints: LinkedIn GTM Agent
+# Constraints: DaoHarness LinkedIn GTM
 
 ## Authority and Topology
 
@@ -14,14 +14,24 @@
 
 ## Frozen Product Boundary
 
-- Customer: event hoster. Platform: LinkedIn. Output: 30 seconds, English.
-- CTA: register/join; exact copy follows official source receipt.
+- Customer: event hoster. Product: DaoHarness on top of the TrueForge harness.
+- Business outcome: turn accumulated raw event footage into a usable,
+  source-linked, approval-gated LinkedIn GTM video/package.
+- Platform: LinkedIn. Output: 30 seconds, English.
+- Demo message: `TrueForge is the harness. DaoHarness ships the real business
+  need.`
+- Value line: `DaoHarness turns raw event footage into usable GTM video—on top
+  of TrueForge.`
+- Primary hook hypothesis: `Your event already has the content. It’s just
+  trapped in the camera roll.` It is not viral-validated; final selection is
+  the user's.
+- CTA is product/business-led: turn your event footage into GTM. Event-attendance
+  language is not the primary CTA.
 - Renderer: HyperFrames-only. Do not use DaoBrew Video, DoubleVideo house style,
   or DaoBrew outro.
 - Event branding comes only from source-approved official event assets.
-- Hook recommendation is a brainstorm, not viral evidence: Authentic FOMO
-  spoken hook + category/product middle. Final hook requires user selection
-  after viral research.
+- Luma remains authority for event facts and source-approved event assets, not
+  the primary CTA.
 - All edit techniques are allowed while source constraints remain true.
 - `publishing_mode: package_only`; `external_action: false`; no LinkedIn draft,
   queue, upload, scheduling, post, send, or connector write.
@@ -48,6 +58,13 @@
   no generated replacement footage or unapproved third-party pixels.
 - All originals, event assets, proxies, frames, contact sheets, audio extracts,
   and renders stay outside Git.
+- Provisional BGM: `New Bass 01` by Lily J from
+  `https://assets.mixkit.co/music/720/720.mp3`; license reference:
+  `https://mixkit.co/license/#musicFree`.
+- Root must not download or directly reference the remote BGM in a composition.
+  VIDEO_RENDER must use `media-use` with `--type bgm --from` to freeze one local
+  ignored asset and record source/license/provenance in `.media/manifest.jsonl`
+  and `.media/index.md` before use.
 
 ## Approval, Tools, and Security
 

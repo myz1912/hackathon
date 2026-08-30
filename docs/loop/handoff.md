@@ -1,10 +1,11 @@
-# Loop Handoff: LinkedIn GTM Agent
+# Loop Handoff: DaoHarness LinkedIn GTM
 
 ## Current State
 
-- Repo/branch/head before edits: `/Users/yz/hackathon` /
-  `codex/trueforge-content-agent` / `fe89fbf`.
-- Loop installed under `docs/loop/`; four files are local and uncommitted.
+- Repo/branch/base head: `/Users/yz/hackathon` /
+  `codex/trueforge-content-agent` / `01466f8`.
+- Base loop is committed; this positioning update is local pending the requested
+  four-file control-doc commit.
 - Verification: `loop_doctor.py --loop-dir docs/loop --json` returned `ok: true`;
   all six MOV inputs were verified untracked; no template/bad-URL markers found.
 - No implementation, runtime thread, commit, render, QA, replay, Qodo review, or
@@ -22,6 +23,8 @@
 
 ```yaml
 customer: event_hoster
+product: daoharness_on_top_of_trueforge_harness
+business_outcome: turn_accumulated_raw_event_footage_into_usable_source_linked_approval_gated_linkedin_gtm_video_and_package
 event_url: https://luma.com/agent-harness?tk=vhwtdV
 platform: linkedin
 duration_seconds: 30
@@ -29,14 +32,20 @@ language: English
 renderer: hyperframes_only
 edit_permissions: all_edit_techniques_permitted
 event_brand: source_approved_official_assets_only
-cta: register_or_join_event
+cta: turn_your_event_footage_into_gtm
 publishing_mode: package_only
 external_action: false
-goal: {value: help hoster drive qualified registrations, status: inferred_pending_source_readback}
-audience: {value: AI agent builders/hackers/technical founders/likely attendees, status: inferred_pending_source_readback}
+demo_message: "TrueForge is the harness. DaoHarness ships the real business need."
+value_line: "DaoHarness turns raw event footage into usable GTM video—on top of TrueForge."
+audience: event_hosters_and_teams_with_accumulated_raw_footage
 hook:
-  recommendation: authentic_fomo_spoken_hook_plus_category_product_middle
-  status: brainstorm_only_not_viral_validated_final_selection_pending_user
+  primary_hypothesis: "Your event already has the content. It’s just trapped in the camera roll."
+  status: not_viral_validated_final_selection_pending_user
+bgm:
+  selection: "New Bass 01 by Lily J"
+  source: https://assets.mixkit.co/music/720/720.mp3
+  license: https://mixkit.co/license/#musicFree
+  status: provisional_not_downloaded_not_frozen_not_ledgered
 media_paths:
   - /Users/yz/hackathon/IMG_4190.mov
   - /Users/yz/hackathon/IMG_4192.mov
@@ -59,6 +68,9 @@ and final rendering may only read the originals.
 
 If a URL is 404, follow the official guide's actual link and record that exact
 URL. Never guess or silently invent a replacement.
+
+Luma remains the authority for event facts and source-approved event assets. It
+does not set the primary CTA; the CTA is to turn event footage into GTM.
 
 ## Fixed Runtime
 
@@ -99,8 +111,10 @@ Current blockers/unverified state:
 - all six media findings need a durable out-of-Git intake manifest;
 - viral research, approval, render, replay, transfer, and Qodo evidence do not
   yet exist.
-- recommended hook direction is brainstorm-only, not viral-validated; final hook
-  remains a user selection after research.
+- primary hook hypothesis is not viral-validated; final hook remains a user
+  selection after research.
+- provisional BGM has not been downloaded, frozen, license-read-backed, or
+  ledgered. Only VIDEO_RENDER may do that through `media-use`.
 
 ## Exact Next Prompts
 
@@ -116,8 +130,9 @@ Own only EVENT_RESEARCH and preserve concurrent work. Read the official URLs in
 handoff.md; persist facts, source/readback times, corrected goal/audience, and
 source-approved official event asset references. If 404, follow and record the
 official guide's actual link; never guess. Do not perform viral research,
-download media, implement runtime code, or act externally. Update tracker and
-handoff with evidence, then stop; create no successor.
+download media, replace the product CTA with an event-attendance CTA, implement
+runtime code, or act externally. DaoHarness product authority remains the frozen loop
+brief. Update tracker and handoff with evidence, then stop; create no successor.
 ```
 
 ### TRUEFORGE_AGENT
@@ -125,6 +140,8 @@ handoff with evidence, then stop; create no successor.
 ```text
 Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop files
 and project context. Own only TRUEFORGE_AGENT and preserve concurrent work.
+The product is DaoHarness on top of the TrueForge harness; the business outcome
+is raw event footage to a source-linked, approval-gated LinkedIn GTM package.
 Reread provider/model state without exposing secrets. Implement only
 trueforge/post-director.agent.json and scripts/trueforge-smoke.mjs. Register the
 named root post-director; dynamic_sub_agents creates exactly Viral Trend
@@ -147,10 +164,41 @@ Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop file
 Own only MEDIA_INTAKE and preserve concurrent work. Read-only collaboration has
 already obtained findings for the six confirmed MOV paths, but no durable
 manifest exists. Persist an ignored/out-of-Git manifest with ownership, hashes,
-metadata, findings, and timecodes. Every original, including
+metadata, findings, and timecodes that identify footage usable for the frozen
+event-hoster GTM outcome. Every original, including
 IMG_4200.mov, must stay untracked/ignored and never be staged, committed, moved,
 renamed, modified, transcoded in place, or overwritten. Do not render or work
 another lane. Update loop files with evidence, then stop; create no successor.
+```
+
+### VIRAL_RESEARCH (gated)
+
+```text
+Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop files.
+Own only VIRAL_RESEARCH. Research current source-linked LinkedIn patterns for the
+event-hoster business outcome. Validate or reject this hook hypothesis: “Your
+event already has the content. It’s just trapped in the camera roll.” Evaluate
+the product CTA “turn your event footage into GTM,” not event attendance as the
+primary CTA. Preserve uncertainty and direct URLs. No accepted viral claim,
+download, render, external action, or successor creation without evidence.
+```
+
+### VIDEO_RENDER (gated)
+
+```text
+Use $codex-loop-engineering, $hyperframes, and $media-use in /Users/yz/hackathon.
+Read all four docs/loop files. Own only VIDEO_RENDER. Use the user-selected final
+hook, the exact demo message “TrueForge is the harness. DaoHarness ships the real
+business need.”, the value line “DaoHarness turns raw event footage into usable
+GTM video—on top of TrueForge.”, and the product CTA “turn your event footage
+into GTM.” Render 30 seconds with HyperFrames-only after digest-bound approval.
+The BGM “New Bass 01” by Lily J is provisional: first use media-use resolve with
+`--type bgm --from https://assets.mixkit.co/music/720/720.mp3`, freeze it to a
+local ignored `.media` asset, verify/read back
+`https://mixkit.co/license/#musicFree`, and record source/license/provenance in
+the media ledger. Never let root download it or reference the remote URL directly
+in the composition. Stop if freeze, ledger, license readback, approval, or QA
+fails. No LinkedIn action or successor creation.
 ```
 
 ## Auto-Chain and Thread Health
@@ -181,6 +229,6 @@ another lane. Update loop files with evidence, then stop; create no successor.
 ## Bootstrap Command
 
 ```bash
-PROJECT_NAME="TrueForge LinkedIn GTM Agent" LOOP_DIR="docs/loop" AUTO_CHAIN=true \
+PROJECT_NAME="DaoHarness LinkedIn GTM" LOOP_DIR="docs/loop" AUTO_CHAIN=true \
   bash /Users/yz/.codex/skills/codex-loop-engineering/install.sh
 ```
