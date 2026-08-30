@@ -1,8 +1,10 @@
 .env
 node_modules/
+dist/
 artifacts/
 inputs/
 renders/
 .DS_Store
 *.log
-
+BUILD_SPEC.md
+FIX_SPEC.md
