@@ -38,10 +38,10 @@ not runtime agents.
   `01a0508c-4f8a-74f0-aeed-23625b10f134`; refine the two existing HyperFrames projects in
   place; remove all TrueForge/PostForge content; replace trap/phonk with upbeat
   contemporary jazz; preserve rejected finals as comparison artifacts.
-- [~] `TRUEFORGE_VERTICAL_SLICE`: active isolated-worktree task
-  `01a0508d-a7f9-7282-8e6d-587cec5689dc`; use native TrueForge UI only. Sync skills,
-  register DaoHarness, present large native outcome buttons, bind approval, call
-  a restricted HyperFrames render bridge, then play/download the local result.
+- [x] `TRUEFORGE_VERTICAL_SLICE`: completed demo-ready local implementation from
+  task `01a0508d-a7f9-7282-8e6d-587cec5689dc`; native need/choice/subagents/
+  approval/render/playback were witnessed. Integrated commits are `22e0e8f` and
+  `f17e31d`; 55/55 tests and the named offline/live readiness gates pass.
 
 - [~] `EVENT_RESEARCH`: facts were obtained read-only; persist official sources,
   corrected goal/audience, and approved event asset ledger. Durable receipt is
@@ -78,7 +78,7 @@ not runtime agents.
 | Work | State | Dependency / proof |
 | --- | --- | --- |
 | `VIDEO_REFINE_TWO_CUTS` | `ACTIVE` | verified project-local task `01a0508c-4f8a-74f0-aeed-23625b10f134`; title/cwd/first turn and skill+loop reads confirmed; model/effort/tier/permission readback unverified |
-| `TRUEFORGE_VERTICAL_SLICE` | `ACTIVE` | verified worktree task `01a0508d-a7f9-7282-8e6d-587cec5689dc`; title/cwd/first turn and loop/integration-risk reads confirmed; model/effort/tier/permission readback unverified; live model remains user gate |
+| `TRUEFORGE_VERTICAL_SLICE` | `COMPLETE_LOCAL` / demo-ready | native session plus accepted Run E witnessed; commits `22e0e8f` and `f17e31d`; 55/55 tests; five models, one agent, seven skills, two connectors; no deployment claim |
 | `TRUEFORGE_CONTRACT_HARDEN` | `COMPLETE_LOCAL` | commit `f305a3f`, 43/43 tests and named offline/schema validators; not pushed, no live proof |
 | `TRUEFORGE_NATIVE_UI_AUDIT` | `COMPLETE` / read-only | task `01a05057-f717-72d1-8d16-d9bc8247eed7`; native approximation only, exact styling and host chrome unsupported; 28/28 snapshot tests, no live proof |
 | `LIVE_UI` | `GATED` | contract lane final acceptance plus `/api/v1/models` non-empty; current count is 0 |
@@ -118,10 +118,10 @@ with FAST off. Apply the full provisional-ID health checklist in `handoff.md`.
 
 ## Current Next Action
 
-Unique Supervisor `01a0505f-6100-7681-9331-e8456b0126d9` creates and monitors
-exactly two new sessions: video refinement immediately, and TrueForge vertical
-slice after the current contract writer returns its handoff. The model registry
-remains a user credential gate; every other non-secret step may proceed.
+Publish the scoped branch with the integrated TrueForge vertical slice,
+submission-ready README, and duration-compliant demo video. Keep the six source
+MOVs and unrelated `docs/plans/**` untracked. The separate two-video refinement
+task remains local work and is not required for this publication checkpoint.
 
 ## Evidence Log
 

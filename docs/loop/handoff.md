@@ -15,6 +15,14 @@
   `renders/daoharness-product-demo-v2/daoharness-product-demo-v2-final.mp4` and
   `renders/event-hoster-gtm-v1/event-hoster-gtm-v1-final.mp4`. Both passed decode
   and audio checks but failed Neo's creative acceptance and require refinement.
+- The native TrueForge vertical slice is demo-ready and integrated on the main
+  checkout as `22e0e8f` plus music-forward fix `f17e31d`. A real session showed
+  natural-language input, three choices, exactly two subagents, native approval,
+  render, and playback. Accepted Run E measured `-15.60 LUFS`, `-1.20 dBTP`,
+  with jazz `8.31-8.54 dB` above room voices.
+- The submission recording from `/Users/yz/Downloads/Area.mp4` was converted to
+  `demo/daoharness-trueforge-demo.mp4`: 178.242 seconds, 15,446,255 bytes,
+  H.264/AAC, full decode pass. The original was not modified.
 - Repo/branch/head at reconciliation: `/Users/yz/hackathon` /
   `codex/trueforge-content-agent` / `c4f69e0`.
 - Neo stopped the monolithic implementation path. The current authority is the
@@ -159,12 +167,11 @@ New ready set:
   `01a0508c-4f8a-74f0-aeed-23625b10f134`, title
   `DaoHarness Video — Refine Two Cuts`, cwd `/Users/yz/hackathon`. It owns only
   the two existing render projects and new ignored outputs.
-- `TRUEFORGE_VERTICAL_SLICE`: active verified worktree task
-  `01a0508d-a7f9-7282-8e6d-587cec5689dc`, title
-  `DaoHarness TrueForge — Native Video Vertical Slice`, cwd
-  `/Users/yz/.codex/worktrees/65e0/hackathon`. It owns the TrueForge
-  manifest/sync/smoke/render-bridge paths. Live completion is blocked until Neo
-  configures a model in the TrueForge UI.
+- `TRUEFORGE_VERTICAL_SLICE`: completed demo-ready local implementation from
+  task `01a0508d-a7f9-7282-8e6d-587cec5689dc`; integrated commits `22e0e8f` and
+  `f17e31d`. Model, agent, skills, connectors, native interaction, approval, and
+  local render were witnessed. Sandbox Git initialization and standalone local
+  approval authentication remain explicit production limitations.
 - `POSTFORGE_CUSTOM_UI`: disposed. Never restore or rebuild it.
 
 The read-only UI audit and contract-hardening lanes are complete. The two new
