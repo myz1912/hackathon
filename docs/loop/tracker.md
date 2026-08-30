@@ -14,22 +14,15 @@ The Codex Supervisor/root is controller-only. It creates, health-checks, and
 monitors scoped project children; all implementation/research runs in children.
 
 ```text
-EVENT_RESEARCH [~] --\
-                       > VIRAL_RESEARCH -------------------\
-TRUEFORGE_AGENT ------/                                    \
-                                                             > live root synthesis
-TRUEFORGE_AGENT -----------------------\                    /  + human approval
-MEDIA_INTAKE ---------------------------> Media Analyst ----/
-                                                                    |
-                                                                    v
-                                                               VIDEO_RENDER
-                                                                    |
-                                                                    v
-                                                         RECORD_REPLAY_SKILL
+TRUEFORGE_AGENT [READY_OFFLINE; LIVE_BLOCKED] ----\
+                                                    > TRANSFER_AUDIT
+VIDEO_RENDER_V1 [READY; USER APPROVED] -> RECORD_REPLAY_SKILL --/
 
-TRUEFORGE_AGENT + RECORD_REPLAY_SKILL -> TRANSFER_AUDIT
-EVENT_RESEARCH + VIRAL_RESEARCH + VIDEO_RENDER + TRANSFER_AUDIT
-                                             -> QODO_SUBMISSION
+TRUEFORGE_AGENT + VIDEO_RENDER_V1 + RECORD_REPLAY_SKILL + TRANSFER_AUDIT
+                                                   -> QODO_SUBMISSION
+
+EVENT_RESEARCH / MEDIA_INTAKE receipts remain incomplete.
+VIRAL_RESEARCH remains deferred and is not a prerequisite for honest V1.
 ```
 
 Only Post Director, Viral Trend Researcher, and Media Analyst are runtime agents.
@@ -49,14 +42,13 @@ not runtime agents.
 - [~] `MEDIA_INTAKE`: read-only collaboration obtained findings for all six
   originals; persist the out-of-Git manifest before accepting the checkpoint.
   Keep every original untracked/ignored and unchanged.
-- [ ] `VIRAL_RESEARCH`: after event receipt and agent registration, run Viral
-  Trend Researcher and accept source-linked LinkedIn evidence. Validate or
-  reject the primary hook hypothesis and product CTA; do not treat either as
-  viral evidence before this checkpoint.
-- [ ] `VIDEO_RENDER`: after both research receipts, Media Analyst, live root
-  synthesis, final user hook selection, and human approval, run HyperFrames ->
-  QA -> package-only output. The child—not root—must use `media-use` to freeze
-  and ledger the provisional BGM before composition use.
+- [ ] `VIRAL_RESEARCH`: deferred. It may later test the hook/CTA, but V1 must not
+  claim viral validation.
+- [ ] `VIDEO_RENDER_V1`: user-approved to start with the exact frozen 30-second
+  hook/value/positioning. Build in an isolated HyperFrames project, freeze/ledger
+  BGM through `media-use`, render, and QA. If real UI capture is unavailable,
+  use an explicitly labelled honest planned-flow visual; never fabricate a live
+  TrueForge run.
 - [ ] `RECORD_REPLAY_SKILL`: user records the runnable flow; package and replay
   the Codex skill with a receipt.
 - [ ] `TRANSFER_AUDIT`: verify Codex replay and TrueForge-native manifest/tool/run
@@ -68,12 +60,12 @@ not runtime agents.
 
 | Work | State | Dependency / proof |
 | --- | --- | --- |
-| `EVENT_RESEARCH` | `READY` / `[~]` | official-source receipt still needed |
 | `TRUEFORGE_AGENT` | `READY_OFFLINE` / `LIVE_BLOCKED` | implement/validate the two-file production set; `GET /api/v1/models` returned `[]` and create returned 422 |
-| `MEDIA_INTAKE` | `READY_TO_PERSIST` / `[~]` | read-only findings exist for six untracked originals, including `IMG_4200.mov`; no durable accepted manifest |
-| `VIRAL_RESEARCH` | `GATED` | durable event receipt + registered agent + non-empty model registry; live-through-TrueForge is model-blocked |
-| `VIDEO_RENDER` | `GATED` | all research/media/runtime evidence + exact approval |
-| `RECORD_REPLAY_SKILL` | `GATED` | runnable `VIDEO_RENDER` flow + user recording |
+| `VIDEO_RENDER_V1` | `READY` / user-approved | exact frozen V1 brief, six source MOVs, official approved event cover; runs in parallel with TRUEFORGE_AGENT |
+| `EVENT_RESEARCH` | `DEFERRED_TO_RECEIPT` / `[~]` | official-source receipt still incomplete; V1 may use only already approved official assets |
+| `MEDIA_INTAKE` | `CONSUMED_AS_INPUT` / `[~]` | findings exist; six originals remain read-only/untracked; durable manifest still incomplete |
+| `VIRAL_RESEARCH` | `DEFERRED` | no accepted evidence; not a V1 prerequisite and must not be claimed |
+| `RECORD_REPLAY_SKILL` | `GATED` | runnable V1 video/flow + user actual recording |
 | `TRANSFER_AUDIT` | `GATED` | TrueForge evidence + successful Codex replay |
 | `QODO_SUBMISSION` | `GATED` | all prior deliverable evidence |
 
@@ -81,9 +73,8 @@ not runtime agents.
 
 | Window | Target |
 | --- | --- |
-| `T+00–10` | event receipt + agent registration + media intake in parallel |
-| `T+10–22` | viral research + Media Analyst + root synthesis + approval |
-| `T+22–40` | HyperFrames render + root QA/package + human visual check |
+| `T+00–10` | launch TRUEFORGE_AGENT and approved VIDEO_RENDER_V1 in parallel |
+| `T+10–40` | offline TrueForge work; isolated HyperFrames build/render/QA with honest evidence labels |
 | `T+40–50` | real Record & Replay capture and replay |
 | `T+50–55` | transfer audit |
 | `T+55–60` | Qodo/submission evidence or exact blocker packet |
@@ -112,10 +103,9 @@ with FAST off. Apply the full provisional-ID health checklist in `handoff.md`.
 
 ## Current Next Action
 
-`T0` is `2026-08-29 17:04 PDT`. Persist `EVENT_RESEARCH` and `MEDIA_INTAKE` while
-implementing/offline-validating the two-file `TRUEFORGE_AGENT` production set.
-Do not claim or run accepted live viral research until the model registry is
-non-empty and create succeeds.
+`T0` is `2026-08-29 17:04 PDT`. Launch exactly two ready project threads in
+parallel: `TRUEFORGE_AGENT` and user-approved `VIDEO_RENDER_V1`. Do not open an
+EVENT_RESEARCH, MEDIA_INTAKE, VIRAL_RESEARCH, or RECORD_REPLAY_SKILL thread now.
 
 ## Evidence Log
 
@@ -127,10 +117,12 @@ non-empty and create succeeds.
 | Product positioning | customer=event hoster; product=DaoHarness on top of TrueForge harness; outcome=raw event footage to usable/source-linked/approval-gated LinkedIn GTM video/package |
 | Authority alignment | aligned across all four loop docs: 30s, product CTA, exact demo/value lines, hook hypothesis status, and provisional BGM gate; no conflicting old CTA/goal remains |
 | Demo message | `TrueForge is the harness. DaoHarness ships the real business need.` |
-| Value line | `DaoHarness turns raw event footage into usable GTM video—on top of TrueForge.` |
-| Hook | primary hypothesis is `Your event already has the content. It’s just trapped in the camera roll.`; not viral-validated; final hook pending user selection |
+| Value line | `DaoHarness turns what your business already has into what it needs to ship.` |
+| Hook | user-selected V1 hook is `You already have the content. It just hasn’t become GTM yet.`; not viral-validated |
 | CTA | product/business CTA: turn your event footage into GTM; event-attendance CTA is not primary |
 | BGM | provisional `New Bass 01` by Lily J; remote source/license recorded in handoff; not frozen or accepted until VIDEO_RENDER runs `media-use` and writes ledger |
+| VIDEO_RENDER V1 approval | user statement `剪吧，用Record and Replay弄下来` authorizes V1 build/render under the frozen brief; it does not prove viral performance, live TrueForge, publication, or outcome |
+| V1 evidence boundary | no real UI capture may be replaced only by an explicitly labelled planned-flow visual; fake session/run evidence is prohibited |
 | Media | read-only findings obtained for all six originals, including `IMG_4200.mov`; durable manifest not accepted; `[~]` |
 | TrueForge runtime | v0.1.4; Bright Data connector authenticated with 74 tools; no connector code required |
 | Agent production set | planned minimum is `trueforge/post-director.agent.json` + `scripts/trueforge-smoke.mjs`; both absent at this checkpoint |

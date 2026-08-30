@@ -3,7 +3,7 @@
 ## Current State
 
 - Repo/branch/base head: `/Users/yz/hackathon` /
-  `codex/trueforge-content-agent` / `01466f8`.
+  `codex/trueforge-content-agent` / `56ce11c`.
 - Base loop is committed; this positioning update is local pending the requested
   four-file control-doc commit.
 - Verification: `loop_doctor.py --loop-dir docs/loop --json` returned `ok: true`;
@@ -18,6 +18,8 @@
   manifest exists. Every MOV remains untracked.
 - `T0=2026-08-29 17:04 PDT`.
 - Output remains `package_only`, `external_action: false`.
+- User statement `剪吧，用Record and Replay弄下来` approves VIDEO_RENDER V1 to
+  start in parallel with TRUEFORGE_AGENT; it is not publication approval.
 
 ## Frozen Inputs
 
@@ -36,16 +38,21 @@ cta: turn_your_event_footage_into_gtm
 publishing_mode: package_only
 external_action: false
 demo_message: "TrueForge is the harness. DaoHarness ships the real business need."
-value_line: "DaoHarness turns raw event footage into usable GTM video—on top of TrueForge."
+value_line: "DaoHarness turns what your business already has into what it needs to ship."
 audience: event_hosters_and_teams_with_accumulated_raw_footage
 hook:
-  primary_hypothesis: "Your event already has the content. It’s just trapped in the camera roll."
-  status: not_viral_validated_final_selection_pending_user
+  v1_selection: "You already have the content. It just hasn’t become GTM yet."
+  status: user_selected_for_v1_not_viral_validated
 bgm:
   selection: "New Bass 01 by Lily J"
   source: https://assets.mixkit.co/music/720/720.mp3
   license: https://mixkit.co/license/#musicFree
   status: provisional_not_downloaded_not_frozen_not_ledgered
+video_render_v1:
+  status: user_approved_to_start
+  project: /Users/yz/hackathon/video/daoharness-linkedin-v1
+  live_trueforge_proof: false
+  viral_validated: false
 media_paths:
   - /Users/yz/hackathon/IMG_4190.mov
   - /Users/yz/hackathon/IMG_4192.mov
@@ -97,11 +104,11 @@ Verified TrueForge facts and current boundary:
 
 ## Ready Set and Blockers
 
-Ready now: persist `EVENT_RESEARCH`; persist `MEDIA_INTAKE`; implement and
-offline-validate the two-file `TRUEFORGE_AGENT` production set.
+Exactly two ready threads: `TRUEFORGE_AGENT` and user-approved
+`VIDEO_RENDER_V1`. They may run in parallel.
 
-Gated: `VIRAL_RESEARCH`, `VIDEO_RENDER`, `RECORD_REPLAY_SKILL`,
-`TRANSFER_AUDIT`, `QODO_SUBMISSION` per `tracker.md`.
+Deferred/gated: `EVENT_RESEARCH`, `MEDIA_INTAKE`, `VIRAL_RESEARCH`,
+`RECORD_REPLAY_SKILL`, `TRANSFER_AUDIT`, `QODO_SUBMISSION`.
 
 Current blockers/unverified state:
 
@@ -111,29 +118,14 @@ Current blockers/unverified state:
 - all six media findings need a durable out-of-Git intake manifest;
 - viral research, approval, render, replay, transfer, and Qodo evidence do not
   yet exist.
-- primary hook hypothesis is not viral-validated; final hook remains a user
-  selection after research.
+- V1 hook is user-selected but not viral-validated.
 - provisional BGM has not been downloaded, frozen, license-read-backed, or
   ledgered. Only VIDEO_RENDER may do that through `media-use`.
 
 ## Exact Next Prompts
 
-Supervisor uses recorded `T0=2026-08-29 17:04 PDT`, creates the following ready
-project children as concurrency permits, health-checks them, and implements
-nothing itself.
-
-### EVENT_RESEARCH
-
-```text
-Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop files.
-Own only EVENT_RESEARCH and preserve concurrent work. Read the official URLs in
-handoff.md; persist facts, source/readback times, corrected goal/audience, and
-source-approved official event asset references. If 404, follow and record the
-official guide's actual link; never guess. Do not perform viral research,
-download media, replace the product CTA with an event-attendance CTA, implement
-runtime code, or act externally. DaoHarness product authority remains the frozen loop
-brief. Update tracker and handoff with evidence, then stop; create no successor.
-```
+Supervisor uses recorded `T0=2026-08-29 17:04 PDT`, creates exactly the two ready
+project children below in parallel, health-checks them, and implements nothing.
 
 ### TRUEFORGE_AGENT
 
@@ -157,41 +149,19 @@ or transfer claim from SKILL.md. Record evidence/blocker, update loop files, and
 stop; create no successor.
 ```
 
-### MEDIA_INTAKE
-
-```text
-Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop files.
-Own only MEDIA_INTAKE and preserve concurrent work. Read-only collaboration has
-already obtained findings for the six confirmed MOV paths, but no durable
-manifest exists. Persist an ignored/out-of-Git manifest with ownership, hashes,
-metadata, findings, and timecodes that identify footage usable for the frozen
-event-hoster GTM outcome. Every original, including
-IMG_4200.mov, must stay untracked/ignored and never be staged, committed, moved,
-renamed, modified, transcoded in place, or overwritten. Do not render or work
-another lane. Update loop files with evidence, then stop; create no successor.
-```
-
-### VIRAL_RESEARCH (gated)
-
-```text
-Use $codex-loop-engineering in /Users/yz/hackathon. Read all four docs/loop files.
-Own only VIRAL_RESEARCH. Research current source-linked LinkedIn patterns for the
-event-hoster business outcome. Validate or reject this hook hypothesis: “Your
-event already has the content. It’s just trapped in the camera roll.” Evaluate
-the product CTA “turn your event footage into GTM,” not event attendance as the
-primary CTA. Preserve uncertainty and direct URLs. No accepted viral claim,
-download, render, external action, or successor creation without evidence.
-```
-
-### VIDEO_RENDER (gated)
+### VIDEO_RENDER_V1
 
 ```text
 Use $codex-loop-engineering, $hyperframes, and $media-use in /Users/yz/hackathon.
-Read all four docs/loop files. Own only VIDEO_RENDER. Use the user-selected final
-hook, the exact demo message “TrueForge is the harness. DaoHarness ships the real
-business need.”, the value line “DaoHarness turns raw event footage into usable
-GTM video—on top of TrueForge.”, and the product CTA “turn your event footage
-into GTM.” Render 30 seconds with HyperFrames-only after digest-bound approval.
+Read all four docs/loop files. Own only VIDEO_RENDER_V1 and the isolated project
+video/daoharness-linkedin-v1/. Preserve concurrent work and never stage or mutate
+the six source MOVs. Use the user-approved hook “You already have the content. It
+just hasn’t become GTM yet.”, the demo message “TrueForge is the harness.
+DaoHarness ships the real business need.”, the value line “DaoHarness turns what
+your business already has into what it needs to ship.”, and the product CTA “turn
+your event footage into GTM.” Build, render, and QA exactly 30 seconds with
+HyperFrames-only. This V1 is not viral-validated and must not fabricate live
+TrueForge proof; without real UI capture, label any workflow visual as planned.
 The BGM “New Bass 01” by Lily J is provisional: first use media-use resolve with
 `--type bgm --from https://assets.mixkit.co/music/720/720.mp3`, freeze it to a
 local ignored `.media` asset, verify/read back

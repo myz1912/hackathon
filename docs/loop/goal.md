@@ -26,11 +26,12 @@ that skill separately against TrueForge-native manifest/tool/run evidence. A
 | renderer | HyperFrames-only | confirmed |
 | output | `package_only`, `external_action: false` | immutable |
 | demo message | `TrueForge is the harness. DaoHarness ships the real business need.` | confirmed |
-| value line | `DaoHarness turns raw event footage into usable GTM video—on top of TrueForge.` | confirmed |
+| value line | `DaoHarness turns what your business already has into what it needs to ship.` | confirmed for V1 |
 | audience | Event hosters and teams with accumulated raw footage that is not yet usable GTM content | derived from confirmed customer/outcome |
 | media | Six confirmed user-original MOV files in `handoff.md` | intake/analysis pending |
-| primary hook hypothesis | `Your event already has the content. It’s just trapped in the camera roll.` | not viral-validated; final hook pending user selection |
+| primary hook | `You already have the content. It just hasn’t become GTM yet.` | user-selected for V1; not viral-validated |
 | BGM | `New Bass 01` by Lily J | provisional; VIDEO_RENDER must freeze/ledger with `media-use` |
+| V1 authorization | User said `剪吧，用Record and Replay弄下来` | approved to start VIDEO_RENDER V1; no external-action approval |
 
 ## Exactly Three Runtime Agents
 
@@ -62,12 +63,17 @@ steps, not agents.
 - HyperFrames renders the 30-second English asset from original footage and
   source-approved event assets. No DaoBrew Video/DoubleVideo house style or
   DaoBrew outro is used.
+- VIDEO_RENDER V1 may proceed in parallel with TRUEFORGE_AGENT. V1 must not claim
+  viral validation or live TrueForge proof; without real UI capture it uses an
+  explicitly labelled honest planned-flow visual rather than a fabricated run.
 - Root-owned technical QA and human visual review pass; root writes the LinkedIn
   package with the product CTA and `external_action: false`; no draft, queue,
   upload, or send occurs.
 - VIDEO_RENDER uses `media-use` to freeze the provisional BGM to a local ignored
   asset and ledger its source/license before use; the root never downloads it.
-- A real Record & Replay capture installs/replays as a Codex skill.
+- After a runnable video/flow exists, the user performs a real Record & Replay
+  capture that installs/replays as a Codex skill. VIDEO_RENDER does not simulate
+  or start that recording.
 - `TRANSFER_AUDIT` independently passes Codex replay and TrueForge-native
   manifest/tool/run evidence before the verdict `transferable` is allowed.
 - The substantive PR receives initial Qodo review, finding resolution, and a

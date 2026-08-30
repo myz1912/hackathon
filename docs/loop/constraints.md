@@ -20,11 +20,10 @@
 - Platform: LinkedIn. Output: 30 seconds, English.
 - Demo message: `TrueForge is the harness. DaoHarness ships the real business
   need.`
-- Value line: `DaoHarness turns raw event footage into usable GTM video—on top
-  of TrueForge.`
-- Primary hook hypothesis: `Your event already has the content. It’s just
-  trapped in the camera roll.` It is not viral-validated; final selection is
-  the user's.
+- Value line: `DaoHarness turns what your business already has into what it needs
+  to ship.`
+- V1 hook: `You already have the content. It just hasn’t become GTM yet.` It is
+  user-selected for V1 but not viral-validated.
 - CTA is product/business-led: turn your event footage into GTM. Event-attendance
   language is not the primary CTA.
 - Renderer: HyperFrames-only. Do not use DaoBrew Video, DoubleVideo house style,
@@ -62,12 +61,19 @@
   `https://assets.mixkit.co/music/720/720.mp3`; license reference:
   `https://mixkit.co/license/#musicFree`.
 - Root must not download or directly reference the remote BGM in a composition.
-  VIDEO_RENDER must use `media-use` with `--type bgm --from` to freeze one local
+  VIDEO_RENDER_V1 must use `media-use` with `--type bgm --from` to freeze one local
   ignored asset and record source/license/provenance in `.media/manifest.jsonl`
   and `.media/index.md` before use.
 
 ## Approval, Tools, and Security
 
+- User statement `剪吧，用Record and Replay弄下来` authorizes VIDEO_RENDER V1
+  build/render under the exact frozen brief, in parallel with TRUEFORGE_AGENT.
+  It does not approve publication or prove viral/live-TrueForge evidence.
+- VIDEO_RENDER_V1 owns only `/Users/yz/hackathon/video/daoharness-linkedin-v1/`;
+  its `.media/` and `renders/` stay ignored. It reads but never mutates six MOVs.
+- Without real UI capture, V1 may show only an explicitly labelled planned-flow
+  visual; fabricated live runs, session IDs, screenshots, or receipts are banned.
 - Approval binds `run_id`, event digest, viral digest, media-manifest digest,
   edit-plan digest, approver, and timestamp. Any change invalidates approval;
   missing/stale/mismatched/revoked approval fails closed.
@@ -78,6 +84,8 @@
   private profile data. Evidence records credential state, never values.
 - No destructive commands, deployment, billing/account mutation, or credential
   creation.
+- Record & Replay starts only after runnable video/flow exists and the user
+  actually performs the recording; VIDEO_RENDER_V1 must not simulate it.
 
 ## Transfer Truth
 
