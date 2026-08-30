@@ -48,9 +48,9 @@ export const SMOKE_USER_PROMPT = [
   "Viral Trend Researcher must make at least one Bright Data read-only MCP call about the official TrueForge event and return source URLs. Media Analyst must independently inspect only this synthetic metadata: one owned 30-second landscape clip, no local path.",
   "Before planning, read and use the configured daobrew-video skill as the governing craft contract. Return only a bounded, source-grounded edit plan with exactly three distinct selectable directions, status pending_approval, publishing_mode package_only, external_action false, approval_valid false, and approval_receipt null.",
   "The first recommended direction must use style_id event-energy, hook_strategy outcome-led, tone warm-editorial, and layout event-energy.",
-  "Exactly one direction must use style_id sarcastic_reaction. Label it a creative, unvalidated virality hypothesis, not a performance claim. For that direction use exactly: hook_strategy 'deadpan hooks'; layout 'awkward real reactions with brief punch-ins and hard cuts'; rationale 'Creative unvalidated virality hypothesis, not a performance claim.'; audio_profile 'sarcastic_reaction confident music contrast with style-selected music dynamically ducked under original visible-speaker voices and room ambience'.",
-  "For every non-sarcastic direction, audio_profile must be exactly '<style_id> style-selected music dynamically ducked under original visible-speaker voices and room ambience'. Every direction must use overlay_cadence exactly 'no subtitles by default'.",
-  "Every direction must preserve original voices from visible speakers and room ambience. Do not generate subtitles unless the user requests them. Dynamically duck style-selected music under original voices. Do not render or act externally.",
+  "Exactly one direction must use style_id sarcastic_reaction. Label it a creative, unvalidated virality hypothesis, not a performance claim. For that direction use exactly: hook_strategy 'deadpan hooks'; layout 'awkward real reactions with brief punch-ins and hard cuts'; rationale 'Creative unvalidated virality hypothesis, not a performance claim.'; audio_profile 'sarcastic_reaction foreground confident music contrast with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB'.",
+  "For every non-sarcastic direction, audio_profile must be exactly '<style_id> foreground music with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB'. Every direction must use overlay_cadence exactly 'no subtitles by default'.",
+  "Every direction must keep music clearly audible in the foreground and preserve original visible-speaker voices and room ambience 6-10 dB lower. Do not generate subtitles unless the user requests them. Do not render or act externally.",
 ].join(" ");
 
 const REQUIRED_APPROVAL_FIELDS = [
@@ -87,12 +87,13 @@ const REQUIRED_INSTRUCTION_CONTRACTS = [
     "SPONSORS_PARTNERS_DIRECTION=credibility-proof|hook=credibility-proof-led|tone=credible-editorial|layout=proof-led",
     "SPONSORS_PARTNERS_DIRECTION",
   ],
-  [
-    "VISIBLE_SPEAKER_AUDIO=preserve-original-voice-low-conversation-room-ambience",
-    "VISIBLE_SPEAKER_AUDIO",
-  ],
   ["SUBTITLES_DEFAULT=off-unless-user-requests", "SUBTITLES_DEFAULT"],
-  ["MUSIC_MIX=style-selected-dynamic-ducking-under-real-voice", "MUSIC_MIX"],
+  ["MIX_PROFILE=jazz_foreground_ambient_voice_v1", "MIX_PROFILE"],
+  ["MUSIC_ROLE=foreground-clearly-audible-throughout", "MUSIC_ROLE"],
+  ["ROOM_VOICE_ROLE=ambient-6-to-10-db-below-music", "ROOM_VOICE_ROLE"],
+  ["MUSIC_DIP=at-most-2-db", "MUSIC_DIP"],
+  ["FINAL_LOUDNESS=-14-to-16-LUFS", "FINAL_LOUDNESS"],
+  ["TRUE_PEAK=at-or-below-minus-1-dBTP", "TRUE_PEAK"],
   [
     "SARCASTIC_REACTION_DIRECTION=creative-unvalidated-virality-hypothesis|shots=awkward-real-reactions+brief-punch-ins+hard-cuts|copy=deadpan-hooks|music=confident-music-contrast",
     "SARCASTIC_REACTION_DIRECTION",
@@ -650,8 +651,8 @@ export function validatePackageBoundary(output, approvalContext) {
   for (const [index, direction] of output.directions.entries()) {
     const expectedAudio =
       direction.style_id === "sarcastic_reaction"
-        ? "sarcastic_reaction confident music contrast with style-selected music dynamically ducked under original visible-speaker voices and room ambience"
-        : `${direction.style_id} style-selected music dynamically ducked under original visible-speaker voices and room ambience`;
+        ? "sarcastic_reaction foreground confident music contrast with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB"
+        : `${direction.style_id} foreground music with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB`;
     invariant(
       canonicalContractToken(direction.audio_profile) === canonicalContractToken(expectedAudio),
       `direction ${index + 1} audio_profile must use the exact direction media contract`,

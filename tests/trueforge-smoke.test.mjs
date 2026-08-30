@@ -55,7 +55,7 @@ function validDirections() {
       layout: "event-energy",
       overlay_cadence: "no subtitles by default",
       audio_profile:
-        "event-energy style-selected music dynamically ducked under original visible-speaker voices and room ambience",
+        "event-energy foreground music with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB",
       rationale: "Matches an event hoster's reuse goal.",
     },
     {
@@ -66,7 +66,7 @@ function validDirections() {
       layout: "process and proof",
       overlay_cadence: "no subtitles by default",
       audio_profile:
-        "dark-premium style-selected music dynamically ducked under original visible-speaker voices and room ambience",
+        "dark-premium foreground music with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB",
       rationale: "Makes the operating proof legible.",
     },
     {
@@ -77,7 +77,7 @@ function validDirections() {
       layout: "awkward real reactions with brief punch-ins and hard cuts",
       overlay_cadence: "no subtitles by default",
       audio_profile:
-        "sarcastic_reaction confident music contrast with style-selected music dynamically ducked under original visible-speaker voices and room ambience",
+        "sarcastic_reaction foreground confident music contrast with original visible-speaker voices and room ambience mixed 6-10 dB lower; music dip limited to 1-2 dB",
       rationale:
         "Creative unvalidated virality hypothesis, not a performance claim.",
     },
@@ -105,9 +105,7 @@ function validManifest() {
         "EVENT_HOSTERS_DIRECTION=event-energy|hook=outcome-led|tone=warm-editorial|layout=event-energy",
         "PRODUCT_TECHNICAL_BUYERS_DIRECTION=dark-premium|hook=process-proof-led|tone=dark-premium|layout=process-proof-led",
         "SPONSORS_PARTNERS_DIRECTION=credibility-proof|hook=credibility-proof-led|tone=credible-editorial|layout=proof-led",
-        "VISIBLE_SPEAKER_AUDIO=preserve-original-voice-low-conversation-room-ambience",
         "SUBTITLES_DEFAULT=off-unless-user-requests",
-        "MUSIC_MIX=style-selected-dynamic-ducking-under-real-voice",
         "SARCASTIC_REACTION_DIRECTION=creative-unvalidated-virality-hypothesis|shots=awkward-real-reactions+brief-punch-ins+hard-cuts|copy=deadpan-hooks|music=confident-music-contrast",
         "SARCASTIC_REACTION_PERFORMANCE_CLAIM=prohibited",
         "SIMPLE_NEED=Make this event reach more people",
@@ -115,6 +113,12 @@ function validManifest() {
         "OUTCOME_1=Grow the next event's reach (Recommended)",
         "OUTCOME_2=Prove sponsor value",
         "OUTCOME_3=Build a repeatable Event GTM asset",
+        "MIX_PROFILE=jazz_foreground_ambient_voice_v1",
+        "MUSIC_ROLE=foreground-clearly-audible-throughout",
+        "ROOM_VOICE_ROLE=ambient-6-to-10-db-below-music",
+        "MUSIC_DIP=at-most-2-db",
+        "FINAL_LOUDNESS=-14-to-16-LUFS",
+        "TRUE_PEAK=at-or-below-minus-1-dBTP",
       ].join("\n"),
       mcp_servers: [
         {
@@ -411,9 +415,13 @@ test("requires the audience mapping and real-voice audio boundaries in agent ins
     "EVENT_HOSTERS_DIRECTION",
     "PRODUCT_TECHNICAL_BUYERS_DIRECTION",
     "SPONSORS_PARTNERS_DIRECTION",
-    "VISIBLE_SPEAKER_AUDIO",
     "SUBTITLES_DEFAULT",
-    "MUSIC_MIX",
+    "MIX_PROFILE",
+    "MUSIC_ROLE",
+    "ROOM_VOICE_ROLE",
+    "MUSIC_DIP",
+    "FINAL_LOUDNESS",
+    "TRUE_PEAK",
     "SARCASTIC_REACTION_DIRECTION",
     "SARCASTIC_REACTION_PERFORMANCE_CLAIM",
   ]) {
@@ -579,9 +587,12 @@ test("live smoke prompt requires daobrew-video grounding but no render or extern
     smoke.SMOKE_USER_PROMPT,
     /first recommended direction[^.]*event-energy[^.]*outcome-led[^.]*warm-editorial/i,
   );
-  assert.match(smoke.SMOKE_USER_PROMPT, /preserve[^.]*original voices[^.]*room ambience/i);
+  assert.match(
+    smoke.SMOKE_USER_PROMPT,
+    /preserve[^.]*original visible-speaker voices[^.]*room ambience/i,
+  );
   assert.match(smoke.SMOKE_USER_PROMPT, /do not generate subtitles unless[^.]*requests/i);
-  assert.match(smoke.SMOKE_USER_PROMPT, /dynamically duck[^.]*music[^.]*original voices/i);
+  assert.match(smoke.SMOKE_USER_PROMPT, /music[^.]*foreground[^.]*voices[^.]*6-10 dB lower/i);
   assert.match(smoke.SMOKE_USER_PROMPT, /sarcastic_reaction/i);
   assert.match(smoke.SMOKE_USER_PROMPT, /creative, unvalidated virality hypothesis/i);
   assert.match(smoke.SMOKE_USER_PROMPT, /not a performance claim/i);
@@ -1155,7 +1166,7 @@ test("rejects event-hoster live evidence unless the first recommendation is even
   }
 });
 
-test("rejects live evidence when any direction drops visible-speaker audio, room ambience, no-subtitle default, or style-selected ducking", () => {
+test("rejects live evidence when any direction drops the foreground-music, ambient-voice, or no-subtitle contract", () => {
   const baseEvents = [
     ...REQUIRED_SUBAGENTS.map((name, index) => ({
       type: "thread.created",

@@ -7,8 +7,10 @@ import test from "node:test";
 import {
   HYPERFRAMES_EXECUTABLE,
   OUTPUT_ROOT,
+  BGM_SOURCE,
   buildCompositionHtml,
   buildHyperframesInvocation,
+  buildMasterInvocation,
   computeEditPlanDigest,
   createBridgeServer,
   getBridgeTools,
@@ -25,6 +27,7 @@ function validPlan() {
     run_id: "event-gtm-001",
     outcome: "grow_next_event_reach",
     direction: "event-energy",
+    mix_profile: "jazz_foreground_ambient_voice_v1",
     event_digest: "1".repeat(64),
     viral_digest: "2".repeat(64),
     media_manifest_digest: "3".repeat(64),
@@ -87,13 +90,27 @@ test("builds one pinned shell-free HyperFrames invocation inside the ignored out
       "--sdr",
       "--strict",
       "--output",
-      "/Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.mp4",
+      "/Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.raw.mp4",
     ],
     cwd: "/Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/project",
     outputPath:
-      "/Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.mp4",
+      "/Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.raw.mp4",
   });
   assert.throws(() => buildHyperframesInvocation("../escape"), /run_id is invalid/);
+});
+
+test("builds one fixed final loudness and true-peak mastering invocation", () => {
+  const invocation = buildMasterInvocation("event-gtm-001");
+
+  assert.equal(invocation.executable, "/opt/homebrew/bin/ffmpeg");
+  assert.equal(
+    invocation.args.join(" "),
+    "-y -v error -i /Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.raw.mp4 -map 0:v:0 -map 0:a:0 -c:v copy -c:a aac -b:a 256k -af loudnorm=I=-15:TP=-2.5:LRA=11:linear=true /Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.mastered.mp4",
+  );
+  assert.equal(
+    invocation.outputPath,
+    "/Users/yz/hackathon/artifacts/daoharness-event-gtm/event-gtm-001/daoharness-event-gtm.mp4",
+  );
 });
 
 test("builds a digestable read-only manifest for exactly the six fixed MOV inputs", async () => {
@@ -104,7 +121,9 @@ test("builds a digestable read-only manifest for exactly the six fixed MOV input
       return { isFile: () => true, size: 1234 };
     },
     hashFile: async (sourcePath) =>
-      computeEditPlanDigest({ source: sourcePath }),
+      sourcePath === BGM_SOURCE.path
+        ? BGM_SOURCE.sha256
+        : computeEditPlanDigest({ source: sourcePath }),
   });
 
   assert.equal(manifest.files.length, 6);
@@ -119,7 +138,7 @@ test("builds a digestable read-only manifest for exactly the six fixed MOV input
       "IMG_4200.mov",
     ],
   );
-  assert.equal(new Set(seen).size, 6);
+  assert.equal(new Set(seen).size, 7);
   assert(
     manifest.files.every(
       ({ candidate_moments }) =>
@@ -135,6 +154,22 @@ test("builds a digestable read-only manifest for exactly the six fixed MOV input
     ),
   );
   assert.match(manifest.media_manifest_digest, /^[0-9a-f]{64}$/);
+  assert.equal(seen.includes(BGM_SOURCE.path), true);
+  assert.deepEqual(manifest.music, {
+    id: "bgm_002",
+    name: "bgm_002.mp3",
+    bytes: 1234,
+    duration_seconds: 89.15263,
+    sha256: BGM_SOURCE.sha256,
+    description: "Dirty Thinkin' by Michael Ramir C.; upbeat contemporary jazz funk",
+    provenance: {
+      provider: "local",
+      from: "https://assets.mixkit.co/music/989/989.mp3",
+      source_page: "https://mixkit.co/free-stock-music/instrument/brass/",
+      license: "Mixkit Stock Music Free License",
+      license_url: "https://mixkit.co/license/#musicFree",
+    },
+  });
   assert(!JSON.stringify(manifest).includes("trueforge"));
 });
 
@@ -152,9 +187,59 @@ test("generates a deterministic DaoHarness-only 30-second composition from three
   assert.match(html, /A DAOHARNESS CAPABILITY/);
   assert.match(html, /BUILT AROUND A REAL BUSINESS NEED/);
   assert.equal((html.match(/<video /g) ?? []).length, 3);
-  assert.equal((html.match(/<audio /g) ?? []).length, 3);
+  assert.equal((html.match(/<audio /g) ?? []).length, 4);
+  assert.equal((html.match(/data-audio-group="room-voices"/g) ?? []).length, 3);
+  assert.match(
+    html,
+    /id="moment-1-audio"[^>]+data-volume="0\.85"[^>]+data-audio-group="room-voices"/,
+  );
+  assert.match(
+    html,
+    /id="moment-2-audio"[^>]+data-volume="0\.5"[^>]+data-audio-group="room-voices"/,
+  );
+  assert.match(
+    html,
+    /id="moment-3-audio"[^>]+data-volume="0\.35"[^>]+data-audio-group="room-voices"/,
+  );
   assert.match(html, /src="assets\/originals\/IMG_4192\.mov"/);
   assert.match(html, /data-media-start="1\.25"/);
+  const bgmTag = html.match(/<audio id="bgm"[^>]+>/)?.[0];
+  assert(bgmTag);
+  assert.match(bgmTag, /src="assets\/audio\/bgm_002\.mp3"/);
+  assert.match(bgmTag, /data-start="0"/);
+  assert.match(bgmTag, /data-duration="30"/);
+  assert.match(bgmTag, /data-audio-group="music"/);
+  const automationText = bgmTag
+    .match(/data-automation="([^"]+)"/)?.[1]
+    ?.replaceAll("&quot;", '"')
+    .replaceAll("&amp;", "&");
+  assert(automationText);
+  const automation = JSON.parse(automationText);
+  assert.deepEqual(automation, {
+    version: 1,
+    lanes: [
+      {
+        target: "volume",
+        points: [
+          { t: 0, v: 0 },
+          { t: 0.8, v: 0.85 },
+          { t: 7.55, v: 0.85 },
+          { t: 7.95, v: 0.75 },
+          { t: 8.35, v: 0.85 },
+          { t: 15.55, v: 0.85 },
+          { t: 15.95, v: 0.75 },
+          { t: 16.35, v: 0.85 },
+          { t: 23.5, v: 0.85 },
+          { t: 24.4, v: 0.85 },
+          { t: 28.8, v: 0.85 },
+          { t: 30, v: 0 },
+        ],
+      },
+    ],
+  });
+  assert(automation.lanes[0].points.every(({ v }) => v >= 0 && v <= 0.85));
+  const lightDipDb = 20 * Math.log10(0.85 / 0.75);
+  assert(lightDipDb >= 1 && lightDipDb <= 2);
   assert(!/TrueForge|PostForge/i.test(html));
   assert(!html.includes("<br"));
   assert(!html.includes("http://"));
@@ -166,12 +251,14 @@ test("renders only after the inspected media digest matches and writes only unde
   const request = validRequest();
   const mediaManifest = {
     files: [],
+    music: { id: "bgm_002" },
     media_manifest_digest: "a".repeat(64),
   };
   request.plan.media_manifest_digest = mediaManifest.media_manifest_digest;
   request.approval_binding.media_manifest_digest = mediaManifest.media_manifest_digest;
   request.approval_binding.edit_plan_digest = computeEditPlanDigest(request.plan);
   const invocations = [];
+  const masterInvocations = [];
 
   try {
     const result = await renderEventGtm(request, {
@@ -181,10 +268,19 @@ test("renders only after the inspected media digest matches and writes only unde
         invocations.push(invocation);
         await writeFile(invocation.outputPath, "fake mp4");
       },
-      probeOutput: async () => ({ duration_seconds: 30 }),
+      masterOutput: async (invocation) => {
+        masterInvocations.push(invocation);
+        await writeFile(invocation.masteredPath, "fake mastered mp4");
+      },
+      probeOutput: async () => ({
+        duration_seconds: 30,
+        integrated_lufs: -15,
+        true_peak_dbtp: -1.2,
+      }),
     });
 
     assert.equal(invocations.length, 1);
+    assert.equal(masterInvocations.length, 1);
     assert.equal(invocations[0].executable, HYPERFRAMES_EXECUTABLE);
     assert(invocations[0].outputPath.startsWith(`${outputRoot}${path.sep}`));
     assert.equal(result.status, "rendered");
@@ -195,6 +291,12 @@ test("renders only after the inspected media digest matches and writes only unde
         path.join(outputRoot, "event-gtm-001", "project", "assets", "originals", "IMG_4192.mov"),
       ),
       "/Users/yz/hackathon/IMG_4192.mov",
+    );
+    assert.equal(
+      await readlink(
+        path.join(outputRoot, "event-gtm-001", "project", "assets", "audio", "bgm_002.mp3"),
+      ),
+      BGM_SOURCE.path,
     );
     const html = await readFile(
       path.join(outputRoot, "event-gtm-001", "project", "index.html"),
@@ -219,6 +321,47 @@ test("fails before writing when the approval-bound media digest is stale", async
       }),
     /media_manifest_digest mismatch/,
   );
+});
+
+test("does not publish the canonical artifact when mastered-audio QA rejects", async () => {
+  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "daoharness-rejected-master-"));
+  const request = validRequest();
+  const mediaManifest = {
+    files: [],
+    music: { id: "bgm_002" },
+    media_manifest_digest: "a".repeat(64),
+  };
+  request.plan.media_manifest_digest = mediaManifest.media_manifest_digest;
+  request.approval_binding.media_manifest_digest = mediaManifest.media_manifest_digest;
+  request.approval_binding.edit_plan_digest = computeEditPlanDigest(request.plan);
+  const canonicalPath = path.join(
+    outputRoot,
+    request.plan.run_id,
+    "daoharness-event-gtm.mp4",
+  );
+
+  try {
+    await assert.rejects(
+      () =>
+        renderEventGtm(request, {
+          outputRoot,
+          inspectMedia: async () => mediaManifest,
+          execute: async (invocation) => {
+            await writeFile(invocation.outputPath, "raw mp4");
+          },
+          masterOutput: async (invocation) => {
+            await writeFile(invocation.masteredPath, "rejected mastered mp4");
+          },
+          probeOutput: async () => {
+            throw new Error("rendered audio true peak must be at or below -1 dBTP");
+          },
+        }),
+      /true peak/,
+    );
+    await assert.rejects(() => readFile(canonicalPath), /ENOENT/);
+  } finally {
+    await rm(outputRoot, { recursive: true, force: true });
+  }
 });
 
 test("exposes exactly one read-only intake tool and one approval-gated fixed render tool", () => {
@@ -421,6 +564,10 @@ test("production agent uses native choice and approval surfaces before the restr
   assert.match(instructions, /inspect_event_media/);
   assert.match(instructions, /render_event_gtm/);
   assert.match(instructions, /native tool approval/);
+  assert.match(instructions, /MIX_PROFILE=jazz_foreground_ambient_voice_v1/);
+  assert.match(instructions, /ROOM_VOICE_ROLE=ambient-6-to-10-db-below-music/);
+  assert.match(instructions, /MUSIC_DIP=at-most-2-db/);
+  assert.match(instructions, /FINAL_LOUDNESS=-14-to-16-LUFS/);
   assert.match(instructions, /TrueForge[^.]*must never appear[^.]*generated video/i);
   assert.doesNotMatch(instructions, /No render tool is attached/i);
 });

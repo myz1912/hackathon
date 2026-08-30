@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import { createReadStream } from "node:fs";
-import { mkdir, readFile, stat, symlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, stat, symlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -14,7 +14,23 @@ export const HYPERFRAMES_PACKAGE = "hyperframes@0.8.19";
 export const OUTPUT_ROOT = "/Users/yz/hackathon/artifacts/daoharness-event-gtm";
 export const BRIDGE_ORIGIN = "http://127.0.0.1:8791";
 export const TRUEFORGE_BASE_URL = "http://127.0.0.1:8790";
+export const BGM_SOURCE = Object.freeze({
+  id: "bgm_002",
+  name: "bgm_002.mp3",
+  path: "/Users/yz/hackathon/renders/event-hoster-gtm-v1/.media/audio/bgm/bgm_002.mp3",
+  duration_seconds: 89.15263,
+  sha256: "e36220dbbaf56e0380bb106e32779b1832fa8f4bd8d40edcaf15b07a17bb9a8f",
+  description: "Dirty Thinkin' by Michael Ramir C.; upbeat contemporary jazz funk",
+  provenance: Object.freeze({
+    provider: "local",
+    from: "https://assets.mixkit.co/music/989/989.mp3",
+    source_page: "https://mixkit.co/free-stock-music/instrument/brass/",
+    license: "Mixkit Stock Music Free License",
+    license_url: "https://mixkit.co/license/#musicFree",
+  }),
+});
 const FFPROBE_EXECUTABLE = "/opt/homebrew/bin/ffprobe";
+const FFMPEG_EXECUTABLE = "/opt/homebrew/bin/ffmpeg";
 const execFileAsync = promisify(execFile);
 const CONNECTOR_MANIFEST_URL = new URL("../trueforge/render-bridge.mcp.json", import.meta.url);
 
@@ -82,11 +98,21 @@ const OUTCOME_COPY = Object.freeze({
   build_repeatable_event_gtm: "TURN ONE EVENT INTO A REUSABLE GTM ASSET.",
 });
 
+const ROOM_VOICE_VOLUMES = Object.freeze({
+  "IMG_4190.mov": 0.35,
+  "IMG_4192.mov": 0.85,
+  "IMG_4196.mov": 0.5,
+  "IMG_4198.mov": 0.85,
+  "IMG_4199.mov": 0.33,
+  "IMG_4200.mov": 0.35,
+});
+
 const REQUEST_FIELDS = Object.freeze(["plan", "approval_binding"]);
 const PLAN_FIELDS = Object.freeze([
   "run_id",
   "outcome",
   "direction",
+  "mix_profile",
   "event_digest",
   "viral_digest",
   "media_manifest_digest",
@@ -162,9 +188,30 @@ export async function inspectEventMedia({ statFile = stat, hashFile = sha256File
       candidate_moments: structuredClone(source.candidate_moments),
     });
   }
+  const musicMetadata = await statFile(BGM_SOURCE.path);
+  invariant(musicMetadata?.isFile?.() === true, `${BGM_SOURCE.name} is not a regular file`);
+  invariant(
+    Number.isInteger(musicMetadata.size) && musicMetadata.size > 0,
+    `${BGM_SOURCE.name} is empty`,
+  );
+  const musicSha256 = await hashFile(BGM_SOURCE.path);
+  invariant(
+    musicSha256 === BGM_SOURCE.sha256,
+    `${BGM_SOURCE.name} does not match the resolved ledgered asset`,
+  );
+  const music = {
+    id: BGM_SOURCE.id,
+    name: BGM_SOURCE.name,
+    bytes: musicMetadata.size,
+    duration_seconds: BGM_SOURCE.duration_seconds,
+    sha256: musicSha256,
+    description: BGM_SOURCE.description,
+    provenance: structuredClone(BGM_SOURCE.provenance),
+  };
   return {
     files,
-    media_manifest_digest: computeEditPlanDigest(files),
+    music,
+    media_manifest_digest: computeEditPlanDigest({ files, music }),
   };
 }
 
@@ -177,6 +224,10 @@ function validatePlan(plan) {
   assertRunId(plan.run_id);
   invariant(OUTCOMES.includes(plan.outcome), "outcome is not supported");
   invariant(DIRECTIONS.includes(plan.direction), "direction is not supported");
+  invariant(
+    plan.mix_profile === "jazz_foreground_ambient_voice_v1",
+    "mix_profile is not supported",
+  );
   assertDigest(plan.event_digest, "event_digest");
   assertDigest(plan.viral_digest, "viral_digest");
   assertDigest(plan.media_manifest_digest, "media_manifest_digest");
@@ -223,7 +274,7 @@ function buildHyperframesInvocationAtRoot(runId, outputRoot) {
   assertRunId(runId);
   const runRoot = path.join(outputRoot, runId);
   const projectDirectory = path.join(runRoot, "project");
-  const outputPath = path.join(runRoot, "daoharness-event-gtm.mp4");
+  const outputPath = path.join(runRoot, "daoharness-event-gtm.raw.mp4");
   return {
     executable: HYPERFRAMES_EXECUTABLE,
     args: [
@@ -249,8 +300,51 @@ export function buildHyperframesInvocation(runId) {
   return buildHyperframesInvocationAtRoot(runId, OUTPUT_ROOT);
 }
 
+function buildMasterInvocationAtRoot(runId, outputRoot) {
+  assertRunId(runId);
+  const runRoot = path.join(outputRoot, runId);
+  const rawPath = path.join(runRoot, "daoharness-event-gtm.raw.mp4");
+  const outputPath = path.join(runRoot, "daoharness-event-gtm.mp4");
+  const masteredPath = path.join(runRoot, "daoharness-event-gtm.mastered.mp4");
+  return {
+    executable: FFMPEG_EXECUTABLE,
+    args: [
+      "-y",
+      "-v",
+      "error",
+      "-i",
+      rawPath,
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0",
+      "-c:v",
+      "copy",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "256k",
+      "-af",
+      "loudnorm=I=-15:TP=-2.5:LRA=11:linear=true",
+      masteredPath,
+    ],
+    cwd: runRoot,
+    rawPath,
+    outputPath,
+    masteredPath,
+  };
+}
+
+export function buildMasterInvocation(runId) {
+  return buildMasterInvocationAtRoot(runId, OUTPUT_ROOT);
+}
+
 function formatNumber(value) {
   return Number.isInteger(value) ? String(value) : String(value).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function escapeAttributeJson(value) {
+  return JSON.stringify(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;");
 }
 
 export function buildCompositionHtml(plan) {
@@ -260,12 +354,35 @@ export function buildCompositionHtml(plan) {
       const start = index * 8;
       const mediaStart = formatNumber(moment.start_seconds);
       const source = `assets/originals/${moment.source}`;
+      const roomVoiceVolume = formatNumber(ROOM_VOICE_VOLUMES[moment.source]);
       return [
         `      <video id="moment-${index + 1}" class="clip moment" src="${source}" data-start="${start}" data-duration="8" data-media-start="${mediaStart}" data-track-index="1" muted playsinline></video>`,
-        `      <audio id="moment-${index + 1}-audio" src="${source}" data-start="${start}" data-duration="8" data-media-start="${mediaStart}" data-track-index="10" data-volume="1"></audio>`,
+        `      <audio id="moment-${index + 1}-audio" src="${source}" data-start="${start}" data-duration="8" data-media-start="${mediaStart}" data-track-index="10" data-volume="${roomVoiceVolume}" data-audio-group="room-voices"></audio>`,
       ].join("\n");
     })
     .join("\n");
+  const musicAutomation = escapeAttributeJson({
+    version: 1,
+    lanes: [
+      {
+        target: "volume",
+        points: [
+          { t: 0, v: 0 },
+          { t: 0.8, v: 0.85 },
+          { t: 7.55, v: 0.85 },
+          { t: 7.95, v: 0.75 },
+          { t: 8.35, v: 0.85 },
+          { t: 15.55, v: 0.85 },
+          { t: 15.95, v: 0.75 },
+          { t: 16.35, v: 0.85 },
+          { t: 23.5, v: 0.85 },
+          { t: 24.4, v: 0.85 },
+          { t: 28.8, v: 0.85 },
+          { t: 30, v: 0 },
+        ],
+      },
+    ],
+  });
 
   return `<!doctype html>
 <html lang="en">
@@ -299,6 +416,7 @@ export function buildCompositionHtml(plan) {
   <body>
     <div id="root" data-composition-id="daoharness-event-gtm" data-no-timeline data-start="0" data-width="1920" data-height="1080" data-duration="30">
 ${videos}
+      <audio id="bgm" src="assets/audio/bgm_002.mp3" data-start="0" data-duration="30" data-media-start="0" data-track-index="20" data-volume="0.85" data-audio-group="music" data-automation="${musicAutomation}"></audio>
       <section id="business-need" class="clip intro" data-start="0" data-duration="4" data-track-index="2">
         <div class="veil"></div><div class="card"><p class="kicker">DAOHARNESS / EVENT GTM / REAL BUSINESS NEED</p><h1>MAKE THIS EVENT REACH MORE PEOPLE.</h1></div>
       </section>
@@ -338,6 +456,51 @@ async function executeHyperframes(invocation) {
   });
 }
 
+async function masterRenderedVideo(invocation) {
+  await execFileAsync(invocation.executable, invocation.args, {
+    cwd: invocation.cwd,
+    timeout: 5 * 60 * 1000,
+    maxBuffer: 4 * 1024 * 1024,
+    env: safeChildEnvironment(),
+  });
+}
+
+async function measureRenderedAudio(outputPath) {
+  const { stderr } = await execFileAsync(
+    FFMPEG_EXECUTABLE,
+    [
+      "-hide_banner",
+      "-nostats",
+      "-i",
+      outputPath,
+      "-af",
+      "loudnorm=I=-15:TP=-1:LRA=11:print_format=json",
+      "-f",
+      "null",
+      "-",
+    ],
+    {
+      timeout: 60_000,
+      maxBuffer: 4 * 1024 * 1024,
+      env: safeChildEnvironment(),
+    },
+  );
+  const matches = stderr.match(/\{[\s\S]*?\}/g);
+  invariant(matches?.length > 0, "rendered audio loudness measurement is missing");
+  const payload = JSON.parse(matches.at(-1));
+  const integratedLufs = Number(payload.input_i);
+  const truePeakDbtp = Number(payload.input_tp);
+  invariant(
+    Number.isFinite(integratedLufs) && integratedLufs >= -16 && integratedLufs <= -14,
+    "rendered audio integrated loudness must be between -16 and -14 LUFS",
+  );
+  invariant(
+    Number.isFinite(truePeakDbtp) && truePeakDbtp <= -1,
+    "rendered audio true peak must be at or below -1 dBTP",
+  );
+  return { integrated_lufs: integratedLufs, true_peak_dbtp: truePeakDbtp };
+}
+
 async function probeRenderedVideo(outputPath) {
   const { stdout } = await execFileAsync(
     FFPROBE_EXECUTABLE,
@@ -360,16 +523,18 @@ async function probeRenderedVideo(outputPath) {
   const duration = Number(payload?.format?.duration);
   invariant(payload?.streams?.some((stream) => stream?.codec_type === "video"), "rendered output has no video stream");
   invariant(Number.isFinite(duration) && duration >= 29.5 && duration <= 30.5, "rendered output duration must be 30 seconds");
-  return { duration_seconds: duration };
+  return { duration_seconds: duration, ...(await measureRenderedAudio(outputPath)) };
 }
 
 async function writeRenderProject(request, mediaManifest, outputRoot) {
   const runRoot = path.join(outputRoot, request.plan.run_id);
   const projectDirectory = path.join(runRoot, "project");
   const assetDirectory = path.join(projectDirectory, "assets", "originals");
+  const audioDirectory = path.join(projectDirectory, "assets", "audio");
   await mkdir(outputRoot, { recursive: true });
   await mkdir(runRoot);
   await mkdir(assetDirectory, { recursive: true });
+  await mkdir(audioDirectory, { recursive: true });
   await writeFile(path.join(projectDirectory, "index.html"), buildCompositionHtml(request.plan), {
     encoding: "utf8",
     flag: "wx",
@@ -387,6 +552,7 @@ async function writeRenderProject(request, mediaManifest, outputRoot) {
   for (const [name, source] of Object.entries(SOURCE_MEDIA)) {
     await symlink(source.path, path.join(assetDirectory, name));
   }
+  await symlink(BGM_SOURCE.path, path.join(audioDirectory, BGM_SOURCE.name));
 }
 
 export async function renderEventGtm(
@@ -395,6 +561,7 @@ export async function renderEventGtm(
     outputRoot = OUTPUT_ROOT,
     inspectMedia = inspectEventMedia,
     execute = executeHyperframes,
+    masterOutput = masterRenderedVideo,
     probeOutput = probeRenderedVideo,
   } = {},
 ) {
@@ -407,9 +574,17 @@ export async function renderEventGtm(
   await writeRenderProject(request, mediaManifest, outputRoot);
   const invocation = buildHyperframesInvocationAtRoot(request.plan.run_id, outputRoot);
   await execute(invocation);
-  const outputMetadata = await stat(invocation.outputPath);
+  const masterInvocation = buildMasterInvocationAtRoot(request.plan.run_id, outputRoot);
+  await masterOutput(masterInvocation);
+  const candidateMetadata = await stat(masterInvocation.masteredPath);
+  invariant(
+    candidateMetadata.isFile() && candidateMetadata.size > 0,
+    "mastered output is missing or empty",
+  );
+  const probe = await probeOutput(masterInvocation.masteredPath);
+  await rename(masterInvocation.masteredPath, masterInvocation.outputPath);
+  const outputMetadata = await stat(masterInvocation.outputPath);
   invariant(outputMetadata.isFile() && outputMetadata.size > 0, "rendered output is missing or empty");
-  const probe = await probeOutput(invocation.outputPath);
   const artifactUrl = `${BRIDGE_ORIGIN}/artifacts/${encodeURIComponent(request.plan.run_id)}/daoharness-event-gtm.mp4`;
   return {
     status: "rendered",
@@ -417,6 +592,8 @@ export async function renderEventGtm(
     mime_type: "video/mp4",
     bytes: outputMetadata.size,
     duration_seconds: probe.duration_seconds,
+    integrated_lufs: probe.integrated_lufs,
+    true_peak_dbtp: probe.true_peak_dbtp,
     media_manifest_digest: mediaManifest.media_manifest_digest,
     edit_plan_digest: request.approval_binding.edit_plan_digest,
     video_url: artifactUrl,
@@ -441,6 +618,7 @@ export function getBridgeTools() {
       run_id: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{2,63}$" },
       outcome: { type: "string", enum: [...OUTCOMES] },
       direction: { type: "string", enum: [...DIRECTIONS] },
+      mix_profile: { type: "string", const: "jazz_foreground_ambient_voice_v1" },
       event_digest: DIGEST_SCHEMA,
       viral_digest: DIGEST_SCHEMA,
       media_manifest_digest: DIGEST_SCHEMA,
