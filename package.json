@@ -15,7 +15,8 @@
     "tf:register": "node --import tsx src/trueforge/register.ts",
     "tf:run": "node --import tsx src/trueforge/run.ts",
     "tf:trace": "node --import tsx src/trueforge/trace.ts",
-    "verify": "npm run typecheck && npm test"
+    "verify": "npm run typecheck && npm test",
+    "tf:render": "node --import tsx src/trueforge/render-cli.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"

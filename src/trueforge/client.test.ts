@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { TrueForgeClient, type FetchLike } from "./client.js";
-import { ensurePostForgeAgent } from "./register.js";
+import { ensurePostForgeAgent, POSTFORGE_AGENT_NAME } from "./register.js";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -14,7 +14,7 @@ const manifest = { model: { name: "provider/model" } };
 describe("TrueForgeClient", () => {
   it("looks up PostForge by name and does not create it twice", async () => {
     const fetchStub = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      jsonResponse({ data: [{ id: "agent-1", name: "postforge", manifest }] }),
+      jsonResponse({ data: [{ id: "agent-1", name: POSTFORGE_AGENT_NAME, manifest }] }),
     );
     const client = new TrueForgeClient({ fetch: fetchStub as unknown as FetchLike });
     const result = await ensurePostForgeAgent(client, {
