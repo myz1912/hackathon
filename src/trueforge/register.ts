@@ -1,7 +1,12 @@
 import { pathToFileURL } from "node:url";
 import { TrueForgeClient, TrueForgeError, type ModelProvider, type TrueForgeAgent } from "./client.js";
 
-export const POSTFORGE_AGENT_NAME = "postforge";
+// The fully-configured agent: 5 Git-backed skills, the brightdata MCP server, sandbox on.
+// An earlier revision used "postforge", which silently created a SECOND bare agent with no
+// skills, no tools and sandbox disabled — sessions then ran against that one and the agent
+// truthfully reported having no exec tool. Verified by the turn's token breakdown:
+// configured runs show tool_definitions 271 / instructions 372; the bare one showed 0 / 32.
+export const POSTFORGE_AGENT_NAME = "postforge-director";
 
 function modelNameFrom(provider: ModelProvider): string | undefined {
   const model = provider.manifest.models[0];

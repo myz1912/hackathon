@@ -62,6 +62,10 @@ export interface TrueForgeClientOptions {
   readonly fetch?: FetchLike;
 }
 
+export type ToolApproval =
+  | { readonly status: "allow" }
+  | { readonly status: "deny"; readonly reason?: string };
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -211,6 +215,41 @@ export class TrueForgeClient {
     );
   }
 
+  async openTurnStream(sessionId: string, content: string): Promise<ReadableStream<Uint8Array>> {
+    const response = await this.#requestResponse(`/api/v1/sessions/${encodeURIComponent(sessionId)}/turns`, {
+      method: "POST",
+      headers: { accept: "text/event-stream" },
+      body: JSON.stringify({
+        input: [{ type: "user.message", content }],
+      }),
+    });
+    if (!response.body) {
+      throw new TrueForgeError("TrueForge streaming turn returned no body", "INVALID_RESPONSE", response.status);
+    }
+    return response.body;
+  }
+
+  async submitToolApproval(
+    sessionId: string,
+    threadId: string,
+    toolCallId: string,
+    approval: ToolApproval,
+  ): Promise<void> {
+    await this.#request(`/api/v1/sessions/${encodeURIComponent(sessionId)}/turns`, {
+      method: "POST",
+      body: JSON.stringify({
+        input: [
+          {
+            type: "user.tool_approval",
+            thread_id: threadId,
+            tool_call_id: toolCallId,
+            approval,
+          },
+        ],
+      }),
+    });
+  }
+
   async getTurn(sessionId: string, turnId: string): Promise<TrueForgeTurn> {
     return asTurn(
       dataFrom(
@@ -235,6 +274,22 @@ export class TrueForgeClient {
   }
 
   async #request(path: string, init: RequestInit = {}): Promise<unknown> {
+    const response = await this.#requestResponse(path, init);
+    const text = await response.text();
+    if (!text) return {};
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new TrueForgeError(
+        "TrueForge returned non-JSON output",
+        "INVALID_RESPONSE",
+        response.status,
+        text.slice(0, 2_000),
+      );
+    }
+  }
+
+  async #requestResponse(path: string, init: RequestInit = {}): Promise<Response> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.#timeoutMs);
     let response: Response;
@@ -256,22 +311,22 @@ export class TrueForgeClient {
       clearTimeout(timeout);
     }
 
-    const text = await response.text();
-    let body: unknown = {};
-    if (text) {
-      try {
-        body = JSON.parse(text);
-      } catch {
-        throw new TrueForgeError("TrueForge returned non-JSON output", "INVALID_RESPONSE", response.status, text.slice(0, 2_000));
-      }
-    }
     if (!response.ok) {
+      const text = await response.text();
+      let body: unknown = {};
+      if (text) {
+        try {
+          body = JSON.parse(text);
+        } catch {
+          body = {};
+        }
+      }
       const message =
         isRecord(body) && isRecord(body.error) && typeof body.error.message === "string"
           ? body.error.message
           : `HTTP ${response.status}`;
       throw new TrueForgeError(`TrueForge HTTP ${response.status}: ${message}`, "HTTP", response.status, text.slice(0, 2_000));
     }
-    return body;
+    return response;
   }
 }
