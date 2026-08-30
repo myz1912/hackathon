@@ -6,6 +6,7 @@ Captured 2026-08-29 from live runs. Nothing here is illustrative.
 |---|---|
 | `trueforge-session-events.json` | A real TrueForge session against `openai/gpt-5-6-sol`: **9 MCP tool responses**, `mcp.initialize`, `turn.done`, 5590 in / 1465 out tokens |
 | `live-research-receipt.json` | A real Bright Data SERP call with a Bright Data `request_id` and 8 source URLs |
+| `trueforge-session-skills.json` | A session where the agent **loaded a Git-backed skill from this repo and quoted it verbatim** |
 
 ## TrueForge configuration (live, verified)
 
@@ -15,6 +16,10 @@ model            openai/gpt-5-6-sol
 mcp server       brightdata           auth_status: authenticated, 5 tools discovered
 enable_tools     search_engine, scrape_as_markdown        ← read-only
 require_approval @write, @destructive                     ← native harness gating
+skills           hook-research, edit-plan, platform-copy, source-discipline
+                 (type: git, url: this repo, path: skills/<name>, ref: main)
+sandbox          enabled (local fallback)   ← skills are materialized here
+subagents        dynamic_sub_agents enabled
 ```
 
 The agent cited these live-researched sources in its edit plan:
